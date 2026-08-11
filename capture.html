@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Add Travel Point</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#12150f; --bg-1:#191d13; --bg-2:#20251a; --line:#2f3626;
+    --sand:#cbb389; --text:#e8e3d3; --text-mute:#8b8b78;
+    --lcd:#9ecb6a; --ok:#7fae5c; --err:#c1462f;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; background:var(--bg-0); color:var(--text);
+    font-family:'Inter',sans-serif; padding:16px 16px 40px;
+    min-height:100vh;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif; font-size:16px;
+    letter-spacing:0.06em; color:var(--sand); margin:4px 0 2px;
+  }
+  .sub{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mute); margin-bottom:18px;}
+  label{
+    display:block; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
+    color:var(--text-mute); margin:16px 0 6px;
+  }
+  select, input[type=text], textarea{
+    width:100%; background:var(--bg-1); border:1px solid var(--line); color:var(--text);
+    border-radius:6px; padding:11px 12px; font-size:15px; font-family:'Inter',sans-serif;
+  }
+  textarea{min-height:70px; resize:vertical;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .btn{
+    width:100%; padding:13px; border-radius:6px; border:1px solid var(--line);
+    background:var(--bg-2); color:var(--text); font-size:14px; font-weight:600;
+    font-family:'Space Grotesk',sans-serif; letter-spacing:0.03em; margin-top:8px;
+  }
+  .btn.primary{background:var(--sand); color:#12150f; border-color:var(--sand);}
+  .btn.small{padding:9px; font-size:12px; margin-top:6px;}
+  .loc-readout{
+    font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--lcd);
+    background:var(--bg-1); border:1px solid var(--line); border-radius:6px;
+    padding:10px 12px; margin-top:8px;
+  }
+  .photo-preview{
+    margin-top:8px; max-width:100%; border-radius:6px; border:1px solid var(--line);
+    display:none;
+  }
+  .status{
+    margin-top:16px; padding:11px 12px; border-radius:6px; font-size:13px;
+    font-family:'JetBrains Mono',monospace; display:none;
+  }
+  .status.ok{background:#1c2a16; border:1px solid var(--ok); color:var(--ok); display:block;}
+  .status.err{background:#2a1a16; border:1px solid var(--err); color:#e08a72; display:block;}
+  .status.info{background:var(--bg-1); border:1px solid var(--line); color:var(--text-mute); display:block;}
+  .pending-bar{
+    margin-top:18px; padding:10px 12px; border-radius:6px;
+    background:var(--bg-1); border:1px solid var(--line);
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-mute);
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+  }
+  .pending-bar b{color:var(--sand);}
+  .hint{font-size:11px; color:var(--text-mute); margin-top:4px; line-height:1.4;}
+</style>
+</head>
+<body>
+
+<h1>ADD TRAVEL POINT</h1>
+<div class="sub">Transafrica Travelmap · Erfassung</div>
+
+<label>Category</label>
+<select id="category"></select>
+
+<label>Subcategory</label>
+<select id="subcategory"></select>
+
+<label>Title</label>
+<input type="text" id="title" placeholder="z. B. Camp am Fluss">
+
+<label>Note</label>
+<textarea id="note" placeholder="Kurze Notiz, optional"></textarea>
+
+<div class="row2">
+  <div>
+    <label>Country</label>
+    <input type="text" id="country" placeholder="optional">
+  </div>
+  <div>
+    <label>Info-URL</label>
+    <input type="text" id="infoUrl" placeholder="pCloud-Link, optional">
+  </div>
+</div>
+
+<label>Photo</label>
+<input type="file" id="photo" accept="image/*" capture="environment">
+<img id="photoPreview" class="photo-preview">
+<div class="hint" id="photoHint"></div>
+
+<label>Location</label>
+<button class="btn" id="btnLocation" type="button">📍 Standort erfassen</button>
+<div class="loc-readout" id="locReadout">LAT — · LON —</div>
+
+<button class="btn primary" id="btnSubmit" type="button" style="margin-top:22px;">Speichern</button>
+<div class="status" id="status"></div>
+
+<div class="pending-bar">
+  <span>Warteschlange: <b id="pendingCount">0</b></span>
+  <button class="btn small" id="btnRetry" type="button" style="width:auto;margin:0;">Jetzt senden</button>
+</div>
+
+<script>
+// ==============================================================
+// CONFIG — vor dem Hosten ausfüllen
+// ==============================================================
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxSXwpQD58bY3D9_GTlR4wpqPGc2b_8i2HectDITAXkAFr1-Er7AcqQm5zGdRbPZ6Gzpg/exec";
+const WRITE_SECRET = "FuerMeinSchutz:#!";
+const MAX_PHOTO_WIDTH = 1600;
+const JPEG_QUALITY = 0.7;
+const QUEUE_KEY = "travelpoint_pending_queue";
+
+// ==============================================================
+// Kategorie-Baum
+// ==============================================================
+const CATEGORIES = {
+  "Accommodation": ["Wild Camp", "Parking Spot", "Campsite", "Hotel", "Guesthouse"],
+  "Checkpoints":   ["Border Crossing", "Police Checkpoint", "Military Checkpoint"],
+  "Logistics":     ["Workshop", "Fuel", "SIM/Internet", "Spare Parts", "Water", "Shopping", "ATM", "Money Exchange"],
+  "Danger":        ["Road Condition", "Safety Warning", "Weather/Natural Hazard", "Avoid Area"],
+  "Sightseeing":   ["Landmark", "Viewpoint", "Hike", "Beach", "Culture"],
+  "Country Info":  ["Description"],
+  "Route":         [],
+  "Social":        ["Blog Entry", "Meet Friends"],
+};
+
+const catSelect = document.getElementById('category');
+const subSelect = document.getElementById('subcategory');
+Object.keys(CATEGORIES).forEach(cat => {
+  const opt = document.createElement('option');
+  opt.value = cat; opt.textContent = cat;
+  catSelect.appendChild(opt);
+});
+
+function refreshSubcategories() {
+  const subs = CATEGORIES[catSelect.value] || [];
+  subSelect.innerHTML = "";
+  if (subs.length === 0) {
+    const opt = document.createElement('option');
+    opt.value = ""; opt.textContent = "(keine)";
+    subSelect.appendChild(opt);
+    subSelect.disabled = true;
+  } else {
+    subSelect.disabled = false;
+    subs.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      subSelect.appendChild(opt);
+    });
+  }
+}
+catSelect.addEventListener('change', refreshSubcategories);
+refreshSubcategories();
+
+// ==============================================================
+// Standort
+// ==============================================================
+let currentLat = null, currentLon = null;
+document.getElementById('btnLocation').addEventListener('click', () => {
+  const readout = document.getElementById('locReadout');
+  readout.textContent = "Ermittle Standort …";
+  if (!navigator.geolocation) {
+    readout.textContent = "Geolocation nicht verfügbar auf diesem Gerät/Browser.";
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      currentLat = pos.coords.latitude;
+      currentLon = pos.coords.longitude;
+      readout.textContent = `LAT ${currentLat.toFixed(5)} · LON ${currentLon.toFixed(5)} (±${Math.round(pos.coords.accuracy)}m)`;
+    },
+    err => {
+      readout.textContent = "Standort fehlgeschlagen: " + err.message + " — bitte GPS/Ortungsdienste prüfen.";
+    },
+    { enableHighAccuracy: true, timeout: 15000 }
+  );
+});
+
+// ==============================================================
+// Foto: einlesen + komprimieren (Canvas-Resize + JPEG-Qualität)
+// ==============================================================
+let photoBase64 = null;
+document.getElementById('photo').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  const hint = document.getElementById('photoHint');
+  if (!file) { photoBase64 = null; return; }
+
+  hint.textContent = "Komprimiere Bild …";
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > MAX_PHOTO_WIDTH) {
+        h = Math.round(h * (MAX_PHOTO_WIDTH / w));
+        w = MAX_PHOTO_WIDTH;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      photoBase64 = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+
+      const preview = document.getElementById('photoPreview');
+      preview.src = photoBase64;
+      preview.style.display = 'block';
+
+      const kb = Math.round(photoBase64.length * 0.73 / 1024);
+      hint.textContent = `Komprimiert auf ~${kb} KB (${w}×${h}px).`;
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+// ==============================================================
+// Warteschlange (localStorage) — Hinweis siehe Chat-Antwort
+// ==============================================================
+function getQueue() {
+  try { return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]"); }
+  catch { return []; }
+}
+function saveQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
+function updatePendingCount() {
+  document.getElementById('pendingCount').textContent = getQueue().length;
+}
+updatePendingCount();
+
+function buildPayload() {
+  const title = document.getElementById('title').value.trim();
+  if (!title) { alert("Title fehlt."); return null; }
+  if (currentLat === null || currentLon === null) { alert("Bitte zuerst Standort erfassen."); return null; }
+
+  return {
+    id: "pt_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
+    secret: WRITE_SECRET,
+    date: new Date().toISOString().slice(0, 10),
+    category: catSelect.value,
+    subcategory: subSelect.value,
+    title: title,
+    note: document.getElementById('note').value.trim(),
+    lat: currentLat,
+    lon: currentLon,
+    photoBase64: photoBase64,
+    infoUrl: document.getElementById('infoUrl').value.trim(),
+    country: document.getElementById('country').value.trim(),
+  };
+}
+
+async function sendPoint(payload) {
+  const res = await fetch(APPS_SCRIPT_URL, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || "Unbekannter Serverfehler");
+  return data;
+}
+
+function showStatus(type, msg) {
+  const el = document.getElementById('status');
+  el.className = "status " + type;
+  el.textContent = msg;
+}
+
+function resetForm() {
+  document.getElementById('title').value = "";
+  document.getElementById('note').value = "";
+  document.getElementById('country').value = "";
+  document.getElementById('infoUrl').value = "";
+  document.getElementById('photo').value = "";
+  document.getElementById('photoPreview').style.display = "none";
+  document.getElementById('photoHint').textContent = "";
+  photoBase64 = null;
+}
+
+document.getElementById('btnSubmit').addEventListener('click', async () => {
+  const payload = buildPayload();
+  if (!payload) return;
+
+  showStatus('info', 'Sende …');
+  try {
+    await sendPoint(payload);
+    showStatus('ok', 'Gespeichert ✓');
+    resetForm();
+  } catch (err) {
+    // Netzwerkfehler oder Server nicht erreichbar -> lokal in Warteschlange ablegen
+    const q = getQueue();
+    q.push(payload);
+    saveQueue(q);
+    updatePendingCount();
+    showStatus('err', `Kein Netz / Fehler (${err.message}). Lokal gespeichert — ${q.length} Punkt(e) in Warteschlange.`);
+    resetForm();
+  }
+});
+
+document.getElementById('btnRetry').addEventListener('click', async () => {
+  let q = getQueue();
+  if (q.length === 0) { showStatus('info', 'Warteschlange ist leer.'); return; }
+
+  showStatus('info', `Sende ${q.length} wartende(n) Punkt(e) …`);
+  const remaining = [];
+  let sent = 0;
+  for (const payload of q) {
+    try {
+      await sendPoint(payload);
+      sent++;
+    } catch (err) {
+      remaining.push(payload); // bleibt in der Warteschlange
+    }
+  }
+  saveQueue(remaining);
+  updatePendingCount();
+  if (remaining.length === 0) {
+    showStatus('ok', `Alle ${sent} Punkt(e) gesendet ✓`);
+  } else {
+    showStatus('err', `${sent} gesendet, ${remaining.length} weiterhin ohne Verbindung.`);
+  }
+});
+</script>
+</body>
+</html>
