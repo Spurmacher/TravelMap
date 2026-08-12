@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TRANSAFRICA TRAVELMAP</title>
+<title>TRAVELMAP</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -217,10 +217,10 @@
 <div class="app">
   <div class="topbar">
     <div class="brand">
-      <span class="mark">TRANSAFRICA · TRAVELMAP</span>
-      <span class="sub">spurmacher.ch — Prototyp</span>
+      <span class="mark">TRAVELMAP</span>
+      <span class="sub">spurmacher.ch</span>
     </div>
-    <div class="stat">DEMO-DATEN · <b id="pointCount">0</b> PUNKTE SICHTBAR</div>
+    <div class="stat">Data:<b id="pointCount">0</b> point visible</div>
   </div>
 
   <div class="sidebar" id="sidebar">
@@ -232,15 +232,15 @@
     <div class="readout">
       <div class="rlabel">Letzte Auswahl</div>
       <div class="rval" id="coordReadout">
-        LAT <span class="dim">— —</span><br>
-        LON <span class="dim">— —</span><br>
-        DAT <span class="dim">— —</span>
+        LAT <span class="dim">â€” â€”</span><br>
+        LON <span class="dim">â€” â€”</span><br>
+        DAT <span class="dim">â€” â€”</span>
       </div>
     </div>
 
     <p class="note">
-      Datenquelle: lokale Demo-Daten (12 Punkte, Marokko–Senegal).<br><br>
-      Nächster Ausbauschritt: Sheet-Anbindung über Google Apps Script
+      Datenquelle: lokaleDaten (12 Punkte).<br><br>
+      NÃchster Ausbauschritt: Sheet-Anbindung über Google Apps Script
       (JSON-Endpoint), Marker aus Sheet statt aus <code>DATA</code>-Array laden.
     </p>
   </div>
@@ -256,7 +256,7 @@
 // ---------------------------------------------------------------
 // Struktur der Punkte entspricht dem Sheet-Schema (siehe data.js):
 // kategorie, titel, lat, lon, datum, notiz
-// Später: dieses Array durch fetch() auf den Apps-Script-Endpoint ersetzen.
+// SpÃ¤ter: dieses Array durch fetch() auf den Apps-Script-Endpoint ersetzen.
 // ---------------------------------------------------------------
 const CATEGORIES = {
   "Accommodation": { hex:"#7fae5c" },
@@ -271,14 +271,14 @@ const CATEGORIES = {
 
 // DATA wird aus data.js geladen (siehe <script src="data.js"> weiter unten).
 // data.js wird von sync-map.ps1 automatisch aus dem Google Sheet erzeugt und
-// enthält ein Array von Punkten mit den Feldern:
+// enthÃ¤lt ein Array von Punkten mit den Feldern:
 // id, date, category, subcategory, title, note, lat, lon, photoUrl, infoUrl, country
 // (exakt das JSON-Format, das doGet() in Code.gs liefert)
 if (typeof DATA === 'undefined') {
-  console.warn('data.js nicht gefunden oder leer — zeige Platzhalter-Punkt.');
+  console.warn('data.js nicht gefunden oder leer â€” zeige Platzhalter-Punkt.');
   var DATA = [
     {id:"placeholder", category:"Country Info", subcategory:"Description", title:"Noch keine Daten synchronisiert",
-     lat:31.6, lon:-7.9, date:"", note:"sync-map.ps1 einmal ausführen, um echte Punkte zu laden.", photoUrl:"", infoUrl:"", country:""}
+     lat:31.6, lon:-7.9, date:"", note:"sync-map.ps1 einmal ausfÃ¼hren, um echte Punkte zu laden.", photoUrl:"", infoUrl:"", country:""}
   ];
 }
 
@@ -296,14 +296,14 @@ const map = L.map('map', { zoomControl:true, attributionControl:true })
 
 
 // Normale Karte:
-// Esri World Street Map	Strassenkarten-Look, �hnlich Google-Maps-Optik
+// Esri World Street Map	Strassenkarten-Look, ähnlich Google-Maps-Optik
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
   maxZoom: 19,
   attribution: 'Esri, HERE, Garmin, FAO, NOAA, USGS'
  }).addTo(map);
 
 
-// Esri World Street Map	Strassenkarten-Look, �hnlich Google-Maps-Optik
+// Esri World Street Map	Strassenkarten-Look, ähnlich Google-Maps-Optik
 
 function makeIcon(hex){
   return L.divIcon({
@@ -328,12 +328,12 @@ Object.keys(CATEGORIES).forEach(cat => markersByCat[cat] = []);
 
 DATA.forEach(pt => {
   const cfg = CATEGORIES[pt.category];
-  if (!cfg) { console.warn('Unbekannte Category, übersprungen:', pt.category, pt); return; }
+  if (!cfg) { console.warn('Unbekannte Category, Ã¼bersprungen:', pt.category, pt); return; }
 
   const marker = L.marker([pt.lat, pt.lon], { icon: makeIcon(cfg.hex) });
-  const subLabel = pt.subcategory ? ` · ${pt.subcategory}` : '';
+  const subLabel = pt.subcategory ? ` Â· ${pt.subcategory}` : '';
   const photoHtml = pt.photoUrl ? `<img src="${pt.photoUrl}" style="width:100%;border-radius:4px;margin-bottom:8px;">` : '';
-  const infoHtml = pt.infoUrl ? `<a href="${pt.infoUrl}" target="_blank" style="color:${cfg.hex};font-size:11px;">Mehr Infos →</a><br>` : '';
+  const infoHtml = pt.infoUrl ? `<a href="${pt.infoUrl}" target="_blank" style="color:${cfg.hex};font-size:11px;">Mehr Infos â†’</a><br>` : '';
 
   marker.bindPopup(`
     <div class="pop-cat" style="color:${cfg.hex}">${pt.category}${subLabel}</div>
@@ -371,7 +371,7 @@ function updateReadout(pt, cfg){
   document.getElementById('coordReadout').innerHTML = `
     LAT <span style="color:${cfg.hex}">${pt.lat.toFixed(4)}</span><br>
     LON <span style="color:${cfg.hex}">${pt.lon.toFixed(4)}</span><br>
-    DAT <span class="dim">${pt.date || '—'}</span>
+    DAT <span class="dim">${pt.date || 'â€”'}</span>
   `;
 }
 
