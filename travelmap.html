@@ -288,9 +288,9 @@ if (typeof DATA === 'undefined') {
 const map = L.map('map', { zoomControl:true, attributionControl:true })
   .setView([24, -10], 4);
 
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende'
+L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+  maxZoom: 17,
+  attribution: 'Kartendaten: &copy; OpenStreetMap-Mitwirkende, SRTM | Darstellung: &copy; OpenTopoMap (CC-BY-SA)'
 }).addTo(map);
 
 function makeIcon(hex){

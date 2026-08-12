@@ -11,3 +11,9 @@
 [2026-08-12 07:33:48] [INFO] Empfangen: 3 gültige Punkte, 0 übersprungen (fehlerhafte Zeilen im Sheet).
 [2026-08-12 07:33:48] [INFO] Keine inhaltlichen Änderungen seit letztem Sync. Kein Commit nötig.
 [2026-08-12 07:33:48] [INFO] === Sync beendet (keine Änderung) ===
+[2026-08-12 08:14:22] [INFO] === Sync gestartet ===
+[2026-08-12 08:14:22] [INFO] Abruf Versuch 1/3 ...
+[2026-08-12 08:14:24] [INFO] Empfangen: 5 gültige Punkte, 0 übersprungen (fehlerhafte Zeilen im Sheet).
+[2026-08-12 08:14:24] [INFO] data.js aktualisiert (5 Punkte).
+[2026-08-12 08:14:27] [INFO] Git push erfolgreich.
+[2026-08-12 08:14:27] [INFO] === Sync erfolgreich abgeschlossen ===
