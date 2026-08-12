@@ -98,8 +98,8 @@ if (Test-Path $DataFile) {
 }
  
 if (-not $hasChanges) {
-    Write-Log "Keine inhaltlichen Ã„nderungen seit letztem Sync. Kein Commit nÃ¶tig."
-    Write-Log "=== Sync beendet (keine Ã„nderung) ==="
+    Write-Log "Keine inhaltlichen Änderungen seit letztem Sync. Kein Commit nÖtig."
+    Write-Log "=== Sync beendet (keine Änderung) ==="
     exit 0
 }
  
@@ -107,7 +107,7 @@ Set-Content -Path $DataFile -Value $jsContent -Encoding utf8
 Write-Log "data.js aktualisiert ($($response.count) Punkte)."
  
 if ($DryRun) {
-    Write-Log "DryRun aktiv â€” kein Git-Commit/Push. Datei wurde trotzdem lokal geschrieben."
+    Write-Log "DryRun aktiv, kein Git-Commit/Push. Datei wurde trotzdem lokal geschrieben."
     Write-Log "=== Sync beendet (DryRun) ==="
     exit 0
 }
@@ -118,12 +118,12 @@ try {
     git add data.js 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "git add fehlgeschlagen" }
  
-    $commitMsg = "Datenupdate $(Get-Date -Format yyyy-MM-dd_HH-mm) â€” $($response.count) Punkte"
+    $commitMsg = "Datenupdate $(Get-Date -Format yyyy-MM-dd_HH-mm), $($response.count) Punkte"
     git commit -m $commitMsg 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "git commit fehlgeschlagen (evtl. nichts zu committen)" }
  
     git push 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw "git push fehlgeschlagen â€” Netzverbindung oder Auth prÃ¼fen" }
+    if ($LASTEXITCODE -ne 0) { throw "git push fehlgeschlagen, Netzverbindung oder Auth prüfen" }
  
     Write-Log "Git push erfolgreich."
 } catch {
