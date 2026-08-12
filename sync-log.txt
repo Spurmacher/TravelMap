@@ -1,0 +1,13 @@
+[2026-08-12 07:32:42] [INFO] === Sync gestartet ===
+[2026-08-12 07:32:42] [INFO] Abruf Versuch 1/3 ...
+[2026-08-12 07:33:12] [WARNUNG] Abruf fehlgeschlagen: Das Zeitlimit für diesen Vorgang wurde überschritten.
+[2026-08-12 07:33:17] [INFO] Abruf Versuch 2/3 ...
+[2026-08-12 07:33:20] [INFO] Empfangen: 3 gültige Punkte, 0 übersprungen (fehlerhafte Zeilen im Sheet).
+[2026-08-12 07:33:20] [INFO] data.js aktualisiert (3 Punkte).
+[2026-08-12 07:33:22] [INFO] Git push erfolgreich.
+[2026-08-12 07:33:22] [INFO] === Sync erfolgreich abgeschlossen ===
+[2026-08-12 07:33:41] [INFO] === Sync gestartet ===
+[2026-08-12 07:33:41] [INFO] Abruf Versuch 1/3 ...
+[2026-08-12 07:33:48] [INFO] Empfangen: 3 gültige Punkte, 0 übersprungen (fehlerhafte Zeilen im Sheet).
+[2026-08-12 07:33:48] [INFO] Keine inhaltlichen Änderungen seit letztem Sync. Kein Commit nötig.
+[2026-08-12 07:33:48] [INFO] === Sync beendet (keine Änderung) ===
