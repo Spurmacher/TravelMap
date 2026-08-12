@@ -17,3 +17,22 @@
 [2026-08-12 08:14:24] [INFO] data.js aktualisiert (5 Punkte).
 [2026-08-12 08:14:27] [INFO] Git push erfolgreich.
 [2026-08-12 08:14:27] [INFO] === Sync erfolgreich abgeschlossen ===
+[2026-08-12 12:37:37] [INFO] === Sync gestartet ===
+[2026-08-12 12:37:37] [INFO] Abruf Versuch 1/3 ...
+[2026-08-12 12:37:40] [FEHLER] Antwort enthält 0 Punkte. Breche ab, um data.js nicht versehentlich zu leeren.
+[2026-08-12 12:37:40] [INFO] (Falls das Sheet wirklich leer sein soll: Zeile hier auskommentieren.)
+[2026-08-12 12:37:57] [INFO] === Sync gestartet ===
+[2026-08-12 12:37:57] [INFO] Abruf Versuch 1/3 ...
+[2026-08-12 12:37:59] [FEHLER] Antwort enthält 0 Punkte. Breche ab, um data.js nicht versehentlich zu leeren.
+[2026-08-12 12:37:59] [INFO] (Falls das Sheet wirklich leer sein soll: Zeile hier auskommentieren.)
+[2026-08-12 12:40:20] [INFO] === Sync gestartet ===
+[2026-08-12 12:40:20] [INFO] Abruf Versuch 1/3 ...
+[2026-08-12 12:40:22] [INFO] Empfangen: 1 gültige Punkte, 0 übersprungen (fehlerhafte Zeilen im Sheet).
+[2026-08-12 12:40:22] [INFO] data.js aktualisiert (1 Punkte).
+[2026-08-12 12:40:22] [INFO] DryRun aktiv - kein Git-Commit/Push. Datei wurde trotzdem lokal geschrieben.
+[2026-08-12 12:40:22] [INFO] === Sync beendet (DryRun) ===
+[2026-08-12 12:40:53] [INFO] === Sync gestartet ===
+[2026-08-12 12:40:53] [INFO] Abruf Versuch 1/3 ...
+[2026-08-12 12:40:55] [INFO] Empfangen: 1 gültige Punkte, 0 übersprungen (fehlerhafte Zeilen im Sheet).
+[2026-08-12 12:40:55] [INFO] Keine inhaltlichen Änderungen seit letztem Sync. Kein Commit nötig.
+[2026-08-12 12:40:55] [INFO] === Sync beendet (keine Änderung) ===
