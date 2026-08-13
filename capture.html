@@ -69,7 +69,7 @@
 <body>
 
 <h1>ADD TRAVEL POINT</h1>
-<div class="sub">Transafrica Travelmap · Erfassung</div>
+<div class="sub">Transafrica Travelmap Â· Erfassung</div>
 
 <label>Category</label>
 <select id="category"></select>
@@ -100,8 +100,8 @@
 <div class="hint" id="photoHint"></div>
 
 <label>Location</label>
-<button class="btn" id="btnLocation" type="button">📍 Standort erfassen</button>
-<div class="loc-readout" id="locReadout">LAT — · LON —</div>
+<button class="btn" id="btnLocation" type="button">ðŸ“ Standort erfassen</button>
+<div class="loc-readout" id="locReadout">LAT â€” Â· LON â€”</div>
 
 <button class="btn primary" id="btnSubmit" type="button" style="margin-top:22px;">Speichern</button>
 <div class="status" id="status"></div>
@@ -113,9 +113,9 @@
 
 <script>
 // ==============================================================
-// CONFIG — vor dem Hosten ausfüllen
+// CONFIG vor dem Hosten ausfüllen
 // ==============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxSXwpQD58bY3D9_GTlR4wpqPGc2b_8i2HectDITAXkAFr1-Er7AcqQm5zGdRbPZ6Gzpg/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyW67TbGLbhSarfEQzLFUm_sKMsFaOp_FhNOhc6wLui48Bg0dYraj2pw4OONLZpVmp8zg/exec";
 const WRITE_SECRET = "FuerMeinSchutz:#!";
 const MAX_PHOTO_WIDTH = 1600;
 const JPEG_QUALITY = 0.7;
@@ -170,26 +170,26 @@ refreshSubcategories();
 let currentLat = null, currentLon = null;
 document.getElementById('btnLocation').addEventListener('click', () => {
   const readout = document.getElementById('locReadout');
-  readout.textContent = "Ermittle Standort …";
+  readout.textContent = "Ermittle Standort â€¦";
   if (!navigator.geolocation) {
-    readout.textContent = "Geolocation nicht verfügbar auf diesem Gerät/Browser.";
+    readout.textContent = "Geolocation nicht verfÃ¼gbar auf diesem GerÃ¤t/Browser.";
     return;
   }
   navigator.geolocation.getCurrentPosition(
     pos => {
       currentLat = pos.coords.latitude;
       currentLon = pos.coords.longitude;
-      readout.textContent = `LAT ${currentLat.toFixed(5)} · LON ${currentLon.toFixed(5)} (±${Math.round(pos.coords.accuracy)}m)`;
+      readout.textContent = `LAT ${currentLat.toFixed(5)} Â· LON ${currentLon.toFixed(5)} (Â±${Math.round(pos.coords.accuracy)}m)`;
     },
     err => {
-      readout.textContent = "Standort fehlgeschlagen: " + err.message + " — bitte GPS/Ortungsdienste prüfen.";
+      readout.textContent = "Standort fehlgeschlagen: " + err.message + " â€” bitte GPS/Ortungsdienste prÃ¼fen.";
     },
     { enableHighAccuracy: true, timeout: 15000 }
   );
 });
 
 // ==============================================================
-// Foto: einlesen + komprimieren (Canvas-Resize + JPEG-Qualität)
+// Foto: einlesen + komprimieren (Canvas-Resize + JPEG-QualitÃ¤t)
 // ==============================================================
 let photoBase64 = null;
 document.getElementById('photo').addEventListener('change', (e) => {
@@ -197,7 +197,7 @@ document.getElementById('photo').addEventListener('change', (e) => {
   const hint = document.getElementById('photoHint');
   if (!file) { photoBase64 = null; return; }
 
-  hint.textContent = "Komprimiere Bild …";
+  hint.textContent = "Komprimiere Bild â€¦";
   const reader = new FileReader();
   reader.onload = (ev) => {
     const img = new Image();
@@ -217,7 +217,7 @@ document.getElementById('photo').addEventListener('change', (e) => {
       preview.style.display = 'block';
 
       const kb = Math.round(photoBase64.length * 0.73 / 1024);
-      hint.textContent = `Komprimiert auf ~${kb} KB (${w}×${h}px).`;
+      hint.textContent = `Komprimiert auf ~${kb} KB (${w}Ã—${h}px).`;
     };
     img.src = ev.target.result;
   };
@@ -225,7 +225,7 @@ document.getElementById('photo').addEventListener('change', (e) => {
 });
 
 // ==============================================================
-// Warteschlange (localStorage) — Hinweis siehe Chat-Antwort
+// Warteschlange (localStorage), Hinweis siehe Chat-Antwort
 // ==============================================================
 function getQueue() {
   try { return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]"); }
@@ -262,7 +262,7 @@ function buildPayload() {
 async function sendPoint(payload) {
   // Immer das aktuell im Code hinterlegte Secret verwenden, nicht das im
   // Warteschlangen-Eintrag gespeicherte (kann veraltet sein, falls sich
-  // WRITE_SECRET seit dem Anlegen des Eintrags ge�ndert hat).
+  // WRITE_SECRET seit dem Anlegen des Eintrags geändert hat).
   const payloadToSend = { ...payload, secret: WRITE_SECRET };
   const res = await fetch(APPS_SCRIPT_URL, {
     method: "POST",
@@ -296,10 +296,10 @@ document.getElementById('btnSubmit').addEventListener('click', async () => {
   const payload = buildPayload();
   if (!payload) return;
 
-  showStatus('info', 'Sende …');
+  showStatus('info', 'Sende');
   try {
     await sendPoint(payload);
-    showStatus('ok', 'Gespeichert ✓');
+    showStatus('ok', 'Gespeichert');
     resetForm();
   } catch (err) {
     // Netzwerkfehler oder Server nicht erreichbar -> lokal in Warteschlange ablegen
@@ -307,7 +307,7 @@ document.getElementById('btnSubmit').addEventListener('click', async () => {
     q.push(payload);
     saveQueue(q);
     updatePendingCount();
-    showStatus('err', `Kein Netz / Fehler (${err.message}). Lokal gespeichert — ${q.length} Punkt(e) in Warteschlange.`);
+    showStatus('err', `Kein Netz / Fehler (${err.message}). Lokal gespeichert ${q.length} Punkt(e) in Warteschlange.`);
     resetForm();
   }
 });
@@ -316,7 +316,7 @@ document.getElementById('btnRetry').addEventListener('click', async () => {
   let q = getQueue();
   if (q.length === 0) { showStatus('info', 'Warteschlange ist leer.'); return; }
 
-  showStatus('info', `Sende ${q.length} wartende(n) Punkt(e) …`);
+  showStatus('info', `Sende ${q.length} wartende(n) Punkt(e) `);
   const remaining = [];
   let sent = 0;
   for (const payload of q) {
@@ -330,7 +330,7 @@ document.getElementById('btnRetry').addEventListener('click', async () => {
   saveQueue(remaining);
   updatePendingCount();
   if (remaining.length === 0) {
-    showStatus('ok', `Alle ${sent} Punkt(e) gesendet ✓`);
+    showStatus('ok', `Alle ${sent} Punkt(e) gesendet `);
   } else {
     showStatus('err', `${sent} gesendet, ${remaining.length} weiterhin ohne Verbindung.`);
   }
