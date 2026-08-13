@@ -35,7 +35,7 @@ const ALLOWED_CATEGORIES = {
   "Social":        ["Blog Entry", "Meet Friends"],
 };
 
-const SHEET_COLUMNS = ["ID","Date","Category","Subcategory","Title","Note","Lat","Lon","Photo-URL","Info-URL","Country"];
+const SHEET_COLUMNS = ["ID","Date","Time","Category","Subcategory","Title","Note","Lat","Lon","Photo-URL","Info-URL","Country"];
 
 // ------------------------------------------------------------
 // doPost — neuen Punkt schreiben (Shortcut -> hier)
@@ -108,6 +108,7 @@ function doPost(e) {
       const row = [
         id,
         body.date || Utilities.formatDate(new Date(), "UTC", "yyyy-MM-dd"),
+        body.time || Utilities.formatDate(new Date(), "UTC", "HH:mm"),
         category,
         subcategory,
         String(body.title).trim(),
@@ -186,6 +187,7 @@ function doGet(e) {
       points.push({
         id: r[idx["ID"]],
         date: formatDateValue(r[idx["Date"]]),
+        time: formatTimeValue(r[idx["Time"]]),
         category: r[idx["Category"]],
         subcategory: r[idx["Subcategory"]],
         title: title,
@@ -217,6 +219,14 @@ function doGet(e) {
 function formatDateValue(v) {
   if (v instanceof Date) {
     return Utilities.formatDate(v, "UTC", "yyyy-MM-dd");
+  }
+  return String(v || "");
+}
+
+function formatTimeValue(v) {
+  if (v instanceof Date) {
+    // Sheets speichert reine Zeitwerte intern oft als Date-Objekt (Datumsteil irrelevant)
+    return Utilities.formatDate(v, "UTC", "HH:mm");
   }
   return String(v || "");
 }
