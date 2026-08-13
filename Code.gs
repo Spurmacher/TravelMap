@@ -93,11 +93,15 @@ function doPost(e) {
       }
 
       // --- Foto optional verarbeiten ---
-      let photoUrl = body.photoUrl || "";
+	  let photoUrl = body.photoUrl || "";
+      let photoWarning = "";
       if (body.photoBase64) {
-        photoUrl = uploadPhoto(body.photoBase64, id);
-        if (photoUrl === null) {
-          return jsonError("Foto zu gross oder Upload fehlgeschlagen. Punkt wurde trotzdem ohne Foto gespeichert — Foto-URL kann später manuell im Sheet ergänzt werden.");
+        const uploaded = uploadPhoto(body.photoBase64, id);
+        if (uploaded === null) {
+          photoUrl = ""; // Punkt wird trotzdem gespeichert, nur ohne Foto
+          photoWarning = "Foto zu gross oder Upload fehlgeschlagen — Punkt wurde ohne Foto gespeichert.";
+        } else {
+          photoUrl = uploaded;
         }
       }
 
@@ -150,7 +154,7 @@ function uploadPhoto(base64Data, id) {
 }
 
 // ------------------------------------------------------------
-// doGet — alle gültigen Punkte als JSON zurückgeben (PowerShell -> hier)
+// doGet alle gültigen Punkte als JSON zurückgeben (PowerShell -> hier)
 // ------------------------------------------------------------
 function doGet(e) {
   try {
