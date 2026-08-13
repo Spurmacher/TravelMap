@@ -170,26 +170,26 @@ refreshSubcategories();
 let currentLat = null, currentLon = null;
 document.getElementById('btnLocation').addEventListener('click', () => {
   const readout = document.getElementById('locReadout');
-  readout.textContent = "Ermittle Standort â€¦";
+  readout.textContent = "Ermittle Standort";
   if (!navigator.geolocation) {
-    readout.textContent = "Geolocation nicht verfÃ¼gbar auf diesem GerÃ¤t/Browser.";
+    readout.textContent = "Geolocation nicht verfügbar auf diesem Gerät/Browser.";
     return;
   }
   navigator.geolocation.getCurrentPosition(
     pos => {
       currentLat = pos.coords.latitude;
       currentLon = pos.coords.longitude;
-      readout.textContent = `LAT ${currentLat.toFixed(5)} Â· LON ${currentLon.toFixed(5)} (Â±${Math.round(pos.coords.accuracy)}m)`;
+      readout.textContent = `LAT ${currentLat.toFixed(5)} · LON ${currentLon.toFixed(5)} (${Math.round(pos.coords.accuracy)}m)`;
     },
     err => {
-      readout.textContent = "Standort fehlgeschlagen: " + err.message + " â€” bitte GPS/Ortungsdienste prÃ¼fen.";
+      readout.textContent = "Standort fehlgeschlagen: " + err.message + ", bitte GPS/Ortungsdienste prüfen.";
     },
     { enableHighAccuracy: true, timeout: 15000 }
   );
 });
 
 // ==============================================================
-// Foto: einlesen + komprimieren (Canvas-Resize + JPEG-QualitÃ¤t)
+// Foto: einlesen + komprimieren (Canvas-Resize + JPEG-Qualität)
 // ==============================================================
 let photoBase64 = null;
 document.getElementById('photo').addEventListener('change', (e) => {
@@ -197,7 +197,7 @@ document.getElementById('photo').addEventListener('change', (e) => {
   const hint = document.getElementById('photoHint');
   if (!file) { photoBase64 = null; return; }
 
-  hint.textContent = "Komprimiere Bild â€¦";
+  hint.textContent = "Komprimiere Bild";
   const reader = new FileReader();
   reader.onload = (ev) => {
     const img = new Image();
@@ -217,7 +217,7 @@ document.getElementById('photo').addEventListener('change', (e) => {
       preview.style.display = 'block';
 
       const kb = Math.round(photoBase64.length * 0.73 / 1024);
-      hint.textContent = `Komprimiert auf ~${kb} KB (${w}Ã—${h}px).`;
+      hint.textContent = `Komprimiert auf ~${kb} KB (${w}—${h}px).`;
     };
     img.src = ev.target.result;
   };
