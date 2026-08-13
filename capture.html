@@ -258,15 +258,22 @@ function buildPayload() {
   };
 }
 
+
 async function sendPoint(payload) {
+  // Immer das aktuell im Code hinterlegte Secret verwenden, nicht das im
+  // Warteschlangen-Eintrag gespeicherte (kann veraltet sein, falls sich
+  // WRITE_SECRET seit dem Anlegen des Eintrags geändert hat).
+  const payloadToSend = { ...payload, secret: WRITE_SECRET };
   const res = await fetch(APPS_SCRIPT_URL, {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(payloadToSend),
   });
   const data = await res.json();
   if (!data.ok) throw new Error(data.error || "Unbekannter Serverfehler");
   return data;
 }
+
+
 
 function showStatus(type, msg) {
   const el = document.getElementById('status');
