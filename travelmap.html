@@ -256,7 +256,7 @@
 // ---------------------------------------------------------------
 // Struktur der Punkte entspricht dem Sheet-Schema (siehe data.js):
 // kategorie, titel, lat, lon, datum, notiz
-// SpÃ¤ter: dieses Array durch fetch() auf den Apps-Script-Endpoint ersetzen.
+// Später: dieses Array durch fetch() auf den Apps-Script-Endpoint ersetzen.
 // ---------------------------------------------------------------
 const CATEGORIES = {
   "Accommodation": { hex:"#7fae5c" },
@@ -271,7 +271,7 @@ const CATEGORIES = {
 
 // DATA wird aus data.js geladen (siehe <script src="data.js"> weiter unten).
 // data.js wird von sync-map.ps1 automatisch aus dem Google Sheet erzeugt und
-// enthÃ¤lt ein Array von Punkten mit den Feldern:
+// enthält ein Array von Punkten mit den Feldern:
 // id, date, category, subcategory, title, note, lat, lon, photoUrl, infoUrl, country
 // (exakt das JSON-Format, das doGet() in Code.gs liefert)
 if (typeof DATA === 'undefined') {
