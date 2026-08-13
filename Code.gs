@@ -27,9 +27,9 @@ const CONFIG = {
 const ALLOWED_CATEGORIES = {
   "Accommodation": ["Wild Camp", "Parking Spot", "Campsite", "Hotel", "Guesthouse"],
   "Checkpoints":   ["Border Crossing", "Police Checkpoint", "Military Checkpoint"],
-  "Logistics":     ["Workshop", "Fuel", "SIM/Internet", "Spare Parts", "Water", "Shopping", "ATM", "Money Exchange"],
-  "Danger":        ["Road Condition", "Safety Warning", "Weather/Natural Hazard", "Avoid Area"],
-  "Sightseeing":   ["Landmark", "Viewpoint", "Hike", "Beach", "Culture"],
+  "Logistics":     ["Water", "Fuel", "SIM/Internet", "Shopping", "ATM", "Money Exchange", "Workshop", "Spare Parts" ],
+  "Danger":        ["Road Condition", "Safety Warning", "Avoid Area", "Natural Hazard", ],
+  "Sightseeing":   ["Attraction", "Viewpoint", "Hike", "Beach", "Culture"],
   "Country Info":  ["Description"],
   "Route":         [""],
   "Social":        ["Blog Entry", "Meet Friends"],
