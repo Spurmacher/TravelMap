@@ -18,7 +18,6 @@ param(
 # ------------------------------------------------------------
 #$EndpointUrl = "https://script.google.com/macros/s/DEINE_SCRIPT_ID/exec"
 $EndpointUrl = "https://script.google.com/macros/s/AKfycbxSXwpQD58bY3D9_GTlR4wpqPGc2b_8i2HectDITAXkAFr1-Er7AcqQm5zGdRbPZ6Gzpg/exec"
-#$RepoPath    = "C:\Users\Peter\Documents\transafrica-map"   # lokaler Git-Klon des Karten-Repos
 $RepoPath    = "C:\Daten WORK\Reisen\Frieda_WorldTour\Media\InteractiveMap\TravelMap"   # lokaler Git-Klon des Karten-Repos
 $DataFile    = Join-Path $RepoPath "data.js"
 $LogFile     = Join-Path $RepoPath "sync-log.txt"
