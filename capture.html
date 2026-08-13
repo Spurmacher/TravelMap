@@ -115,7 +115,7 @@
 // ==============================================================
 // CONFIG vor dem Hosten ausfüllen
 // ==============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzI0XZ2br7KORBpCZbKAxrLlGSYwxHzZp845jsuO7GOWcpILrgrcyOpVB2V_CvZeTZZiw/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzN-D9RRH0Mjn-e5jIXBPLcpUGNzpL6zGINtfzgAOWuvOXMEhg6y1x15x8ngbX3ysNyfw/exec";
 const WRITE_SECRET = "FuerMeinSchutz:#!";
 const MAX_PHOTO_WIDTH = 1600;
 const JPEG_QUALITY = 0.7;
@@ -242,10 +242,16 @@ function buildPayload() {
   if (!title) { alert("Title fehlt."); return null; }
   if (currentLat === null || currentLon === null) { alert("Bitte zuerst Standort erfassen."); return null; }
 
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
   return {
     id: "pt_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
     secret: WRITE_SECRET,
-    date: new Date().toISOString().slice(0, 10),
+    date: dateStr,
+    time: timeStr,
     category: catSelect.value,
     subcategory: subSelect.value,
     title: title,
