@@ -57,7 +57,7 @@ for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
     }
 }
  
-# --- 2. Antwort validieren, bevor irgendwas überschrieben wird ---
+# --- 2. Antwort validieren, bevor irgendwas Ã¼berschrieben wird ---
 if (-not $response.ok) {
     Write-Log "Apps Script meldet Fehler: $($response.error)" "FEHLER"
     exit 1
@@ -77,18 +77,18 @@ if ($response.skipped -gt 0) {
 # --- 3. data.js neu erzeugen ---
 $json = $response.points | ConvertTo-Json -Depth 6 -Compress
 # PowerShell-Eigenheit: ConvertTo-Json gibt bei genau 1 Element ein einzelnes
-# Objekt statt ein Array zurück ({...} statt [{...}]) — hier korrigieren,
+# Objekt statt ein Array zurÃ¼ck ({...} statt [{...}]) â€” hier korrigieren,
 # da die Karte immer ein Array erwartet.
 if ($response.points.Count -eq 1) {
     $json = "[$json]"
 }
 $jsContent = @"
-// Automatisch generiert von sync-map.ps1 — nicht manuell bearbeiten.
+// Automatisch generiert von sync-map.ps1” nicht manuell bearbeiten.
 // Quelle: Google Sheet, synchronisiert am $(Get-Date -Format "yyyy-MM-dd HH:mm")
 var DATA = $json;
 "@
  
-# --- 4. Nur committen, wenn sich wirklich etwas geändert hat ---
+# --- 4. Nur committen, wenn sich wirklich etwas geÃ¤ndert hat ---
 $hasChanges = $true
 if (Test-Path $DataFile) {
     $existing = Get-Content $DataFile -Raw
@@ -98,8 +98,8 @@ if (Test-Path $DataFile) {
 }
  
 if (-not $hasChanges) {
-    Write-Log "Keine inhaltlichen �nderungen seit letztem Sync. Kein Commit n�tig."
-    Write-Log "=== Sync beendet (keine �nderung) ==="
+    Write-Log "Keine inhaltlichen Änderungen seit letztem Sync. Kein Commit nÖtig."
+    Write-Log "=== Sync beendet (keine Änderung) ==="
     exit 0
 }
  
@@ -112,7 +112,7 @@ if ($DryRun) {
     exit 0
 }
  
-# --- 5. Git commit + push, mit Fehlerprüfung nach jedem Schritt ---
+# --- 5. Git commit + push, mit FehlerprÃ¼fung nach jedem Schritt ---
 Push-Location $RepoPath
 try {
     git add data.js 2>&1 | Out-Null
@@ -123,12 +123,12 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "git commit fehlgeschlagen (evtl. nichts zu committen)" }
  
     git push 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw "git push fehlgeschlagen, Netzverbindung oder Auth pr�fen" }
+    if ($LASTEXITCODE -ne 0) { throw "git push fehlgeschlagen, Netzverbindung oder Auth prüfen" }
  
     Write-Log "Git push erfolgreich."
 } catch {
     Write-Log "Git-Fehler: $($_.Exception.Message)" "FEHLER"
-    Write-Log "data.js wurde lokal aktualisiert, aber NICHT gepusht. Beim nächsten Lauf erneut versuchen." "WARNUNG"
+    Write-Log "data.js wurde lokal aktualisiert, aber NICHT gepusht. Beim nÃ¤chsten Lauf erneut versuchen." "WARNUNG"
     Pop-Location
     exit 1
 }
