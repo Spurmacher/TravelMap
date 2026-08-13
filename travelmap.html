@@ -232,9 +232,9 @@
     <div class="readout">
       <div class="rlabel">Letzte Auswahl</div>
       <div class="rval" id="coordReadout">
-        LAT <span class="dim">â€” â€”</span><br>
-        LON <span class="dim">â€” â€”</span><br>
-        DAT <span class="dim">â€” â€”</span>
+        LAT <span class="dim"> </span><br>
+        LON <span class="dim"> </span><br>
+        DAT <span class="dim"> </span>
       </div>
     </div>
 
@@ -371,7 +371,7 @@ function updateReadout(pt, cfg){
   document.getElementById('coordReadout').innerHTML = `
     LAT <span style="color:${cfg.hex}">${pt.lat.toFixed(4)}</span><br>
     LON <span style="color:${cfg.hex}">${pt.lon.toFixed(4)}</span><br>
-    DAT <span class="dim">${pt.date || 'â€”'}</span>
+    DAT <span class="dim">${pt.date || ' '}</span>
   `;
 }
 
