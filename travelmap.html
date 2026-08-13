@@ -341,7 +341,7 @@ DATA.forEach(pt => {
     ${photoHtml}
     <div class="pop-note">${pt.note || ''}</div>
     ${infoHtml}
-    <div class="pop-meta"><span>${pt.date || ''}</span><span>${pt.lat.toFixed(4)}, ${pt.lon.toFixed(4)}</span></div>
+    <div class="pop-meta"><span>${pt.date || ''}${pt.time ? ' · ' + pt.time : ''}</span><span>${pt.lat.toFixed(4)}, ${pt.lon.toFixed(4)}</span></div>
   `);
   marker.on('click', () => updateReadout(pt, cfg));
   marker.addTo(layerGroups[pt.category]);
@@ -350,7 +350,7 @@ DATA.forEach(pt => {
 
 // Verbindungslinie entlang der Route-Punkte, chronologisch sortiert
 const routeSorted = DATA.filter(d => d.category === "Route" && d.date)
-  .slice().sort((a, b) => a.date.localeCompare(b.date));
+  .slice().sort((a, b) => `${a.date} ${a.time || ''}`.localeCompare(`${b.date} ${b.time || ''}`));
 if (routeSorted.length > 1) {
   L.polyline(
     routeSorted.map(d => [d.lat, d.lon]),
@@ -371,7 +371,7 @@ function updateReadout(pt, cfg){
   document.getElementById('coordReadout').innerHTML = `
     LAT <span style="color:${cfg.hex}">${pt.lat.toFixed(4)}</span><br>
     LON <span style="color:${cfg.hex}">${pt.lon.toFixed(4)}</span><br>
-    DAT <span class="dim">${pt.date || ' '}</span>
+    DAT <span class="dim">${pt.date || '—'}${pt.time ? ' · ' + pt.time : ''}</span>
   `;
 }
 
