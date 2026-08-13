@@ -1,5 +1,5 @@
 /**
- * TRANSAFRICA TRAVELMAP — Apps Script Backend
+ * TRAVELMAP — Apps Script Backend
  * ------------------------------------------------------------
  * Zwei Endpoints in einem Script:
  *   doPost(e)  -> Schreiben eines neuen Punkts (vom iPhone-Shortcut)
@@ -121,10 +121,10 @@ function doPost(e) {
 
       if (existingRow > 0) {
         sheet.getRange(existingRow, 1, 1, row.length).setValues([row]);
-        return jsonOk({ id, action: "updated" });
+        return jsonOk({ id, action: "updated", warning: photoWarning || undefined });
       } else {
         sheet.appendRow(row);
-        return jsonOk({ id, action: "created" });
+        return jsonOk({ id, action: "created", warning: photoWarning || undefined });
       }
     } finally {
       lock.releaseLock();
@@ -139,6 +139,7 @@ function uploadPhoto(base64Data, id) {
   try {
     // grobe Grössenschätzung: Base64 ist ca. 1.37x der Originalgrösse
     if (base64Data.length * 0.73 > CONFIG.MAX_PHOTO_BYTES) {
+      Logger.log('uploadPhoto: Foto zu gross, base64.length=' + base64Data.length);
       return null;
     }
     const folder = DriveApp.getFolderById(CONFIG.PHOTO_FOLDER_ID);
@@ -147,8 +148,10 @@ function uploadPhoto(base64Data, id) {
     const blob = Utilities.newBlob(bytes, "image/jpeg", `${id}.jpg`);
     const file = folder.createFile(blob);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    return `https://drive.google.com/uc?id=${file.getId()}`;
+    Logger.log('uploadPhoto: Erfolgreich, fileId=' + file.getId());
+    return `https://drive.google.com/thumbnail?id=${file.getId()}&sz=w1600`;
   } catch (err) {
+    Logger.log('uploadPhoto: FEHLER — ' + err.message);
     return null;
   }
 }
