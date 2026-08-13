@@ -19,7 +19,7 @@
 
 const CONFIG = {
   SHEET_NAME: "Data",                 // Tab-Name im Sheet
-  PHOTO_FOLDER_ID: "https://drive.google.com/drive/folders/1H9FDkUuveQS8SWvWUN_zjGOU0Ia7k2K4",  // Google Drive Ordner für Fotos
+  PHOTO_FOLDER_ID: "1H9FDkUuveQS8SWvWUN_zjGOU0Ia7k2K4",  // Google Drive Ordner für Fotos
   WRITE_SECRET: "FuerMeinSchutz:#!",  // schützt doPost vor Fremdzugriff
   MAX_PHOTO_BYTES: 7 * 1024 * 1024,   // ~7 MB decoded, Apps-Script-Sicherheitsmarge
 };
