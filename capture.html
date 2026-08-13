@@ -298,8 +298,12 @@ document.getElementById('btnSubmit').addEventListener('click', async () => {
 
   showStatus('info', 'Sende');
   try {
-    await sendPoint(payload);
-    showStatus('ok', 'Gespeichert');
+    const result = await sendPoint(payload);
+    if (result.warning) {
+      showStatus('err', `Gespeichert, aber: ${result.warning}`);
+    } else {
+      showStatus('ok', 'Gespeichert');
+    }
     resetForm();
   } catch (err) {
     // Netzwerkfehler oder Server nicht erreichbar -> lokal in Warteschlange ablegen
