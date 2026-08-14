@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  TRANSAFRICA TRAVELMAP wöchentlicher Sync: holt Daten aus dem Google Sheet
+  TRAVELMAP wÃ¶chentlicher Sync: holt Daten aus dem Google Sheet
   (via Apps Script Endpoint) und pusht sie als data.js ins GitHub-Repo.
 
 .NOTES
@@ -16,8 +16,7 @@ param(
 # ------------------------------------------------------------
 # CONFIG hier anpassen
 # ------------------------------------------------------------
-#$EndpointUrl = "https://script.google.com/macros/s/DEINE_SCRIPT_ID/exec"
-$EndpointUrl = "https://script.google.com/macros/s/AKfycbxSXwpQD58bY3D9_GTlR4wpqPGc2b_8i2HectDITAXkAFr1-Er7AcqQm5zGdRbPZ6Gzpg/exec"
+$EndpointUrl = "https://script.google.com/macros/s/AKfycbzN-D9RRH0Mjn-e5jIXBPLcpUGNzpL6zGINtfzgAOWuvOXMEhg6y1x15x8ngbX3ysNyfw/exec"
 $RepoPath    = "C:\Daten WORK\Reisen\Frieda_WorldTour\Media\InteractiveMap\TravelMap"   # lokaler Git-Klon des Karten-Repos
 $DataFile    = Join-Path $RepoPath "data.js"
 $LogFile     = Join-Path $RepoPath "sync-log.txt"
@@ -32,7 +31,7 @@ function Write-Log {
  
 Write-Log "=== Sync gestartet ==="
  
-# --- Vorab-Check: liegt der Git-Ordner überhaupt vor? ---
+# --- Vorab-Check: liegt der Git-Ordner Ã¼berhaupt vor? ---
 if (-not (Test-Path $RepoPath)) {
     Write-Log "Repo-Pfad nicht gefunden: $RepoPath" "FEHLER"
     exit 1
@@ -49,47 +48,47 @@ for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
     } catch {
         Write-Log "Abruf fehlgeschlagen: $($_.Exception.Message)" "WARNUNG"
         if ($attempt -eq $maxAttempts) {
-            Write-Log "Alle Versuche fehlgeschlagen. Sync abgebrochen, bestehende data.js bleibt unverändert." "FEHLER"
+            Write-Log "Alle Versuche fehlgeschlagen. Sync abgebrochen, bestehende data.js bleibt unverÃ¤ndert." "FEHLER"
             exit 1
         }
         Start-Sleep -Seconds (5 * $attempt)  # steigender Backoff
     }
 }
  
-# --- 2. Antwort validieren, bevor irgendwas überschrieben wird ---
+# --- 2. Antwort validieren, bevor irgendwas Ã¼berschrieben wird ---
 if (-not $response.ok) {
     Write-Log "Apps Script meldet Fehler: $($response.error)" "FEHLER"
     exit 1
 }
  
 if (-not $response.points -or $response.points.Count -eq 0) {
-    Write-Log "Antwort enthält 0 Punkte. Breche ab, um data.js nicht versehentlich zu leeren." "FEHLER"
+    Write-Log "Antwort enthÃ¤lt 0 Punkte. Breche ab, um data.js nicht versehentlich zu leeren." "FEHLER"
     Write-Log "(Falls das Sheet wirklich leer sein soll: Zeile hier auskommentieren.)" "INFO"
     exit 1
 }
  
-Write-Log "Empfangen: $($response.count) gültige Punkte, $($response.skipped) Übersprungen (fehlerhafte Zeilen im Sheet)."
+Write-Log "Empfangen: $($response.count) gÃ¼ltige Punkte, $($response.skipped) Ãœbersprungen (fehlerhafte Zeilen im Sheet)."
 if ($response.skipped -gt 0) {
-    Write-Log "Hinweis: $($response.skipped) Zeile(n) im Sheet haben ungültige/fehlende Lat-Lon oder Titel und wurden ignoriert." "WARNUNG"
+    Write-Log "Hinweis: $($response.skipped) Zeile(n) im Sheet haben ungÃ¼ltige/fehlende Lat-Lon oder Titel und wurden ignoriert." "WARNUNG"
 }
  
 # --- 3. data.js neu erzeugen ---
 $json = $response.points | ConvertTo-Json -Depth 6 -Compress
 # PowerShell-Eigenheit: ConvertTo-Json gibt bei genau 1 Element ein einzelnes
-# Objekt statt ein Array zurÜck ({...} statt [{...}])‚ hier korrigieren,
+# Objekt statt ein Array zurÃœck ({...} statt [{...}])â€šÂ hier korrigieren,
 # da die Karte immer ein Array erwartet.
 if ($response.points.Count -eq 1) {
     $json = "[$json]"
 }
 $jsContent = @"
-// Automatisch generiert von sync-map.ps1â€ nicht manuell bearbeiten.
+// Automatisch generiert von sync-map.ps1Ã¢â‚¬Â nicht manuell bearbeiten.
 // Quelle: Google Sheet, synchronisiert am $(Get-Date -Format "yyyy-MM-dd HH:mm")
 var DATA = $json;
 "@
  
-# --- 4. Nur committen, wenn sich wirklich etwas geändert hat ---
+# --- 4. Nur committen, wenn sich wirklich etwas geÃ¤ndert hat ---
 # Vergleich nur anhand der reinen "var DATA = ..."-Zeile, nicht der ganzen Datei -
-# der Zeitstempel-Kommentar oben würde sonst bei jedem Lauf einen Unterschied vortäuschen.
+# der Zeitstempel-Kommentar oben wÃ¼rde sonst bei jedem Lauf einen Unterschied vortÃ¤uschen.
 $hasChanges = $true
 if (Test-Path $DataFile) {
     $existingDataLine = (Get-Content $DataFile -Raw) -replace '(?s)^.*(var DATA = .*;)\s*$', '$1'
@@ -100,8 +99,8 @@ if (Test-Path $DataFile) {
 }
  
 if (-not $hasChanges) {
-    Write-Log "Keine inhaltlichen Änderungen seit letztem Sync. Kein Commit nötig."
-    Write-Log "=== Sync beendet (keine Änderung) ==="
+    Write-Log "Keine inhaltlichen Ã„nderungen seit letztem Sync. Kein Commit nÃ¶tig."
+    Write-Log "=== Sync beendet (keine Ã„nderung) ==="
     exit 0
 }
  
@@ -114,7 +113,7 @@ if ($DryRun) {
     exit 0
 }
  
-# --- 5. Git commit + push, mit Fehlerprüfung nach jedem Schritt ---
+# --- 5. Git commit + push, mit FehlerprÃ¼fung nach jedem Schritt ---
 Push-Location $RepoPath
 try {
     git add data.js 2>&1 | Out-Null
@@ -125,12 +124,12 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "git commit fehlgeschlagen (evtl. nichts zu committen)" }
  
     git push 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw "git push fehlgeschlagen, Netzverbindung oder Auth prüfen" }
+    if ($LASTEXITCODE -ne 0) { throw "git push fehlgeschlagen, Netzverbindung oder Auth prÃ¼fen" }
  
     Write-Log "Git push erfolgreich."
 } catch {
     Write-Log "Git-Fehler: $($_.Exception.Message)" "FEHLER"
-    Write-Log "data.js wurde lokal aktualisiert, aber NICHT gepusht. Beim nächsten Lauf erneut versuchen." "WARNUNG"
+    Write-Log "data.js wurde lokal aktualisiert, aber NICHT gepusht. Beim nÃ¤chsten Lauf erneut versuchen." "WARNUNG"
     Pop-Location
     exit 1
 }
