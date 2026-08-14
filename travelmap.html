@@ -591,6 +591,28 @@ function stripAllMarkers(layer){
   toRemove.forEach(m => layer.removeLayer(m));
 }
 
+// Ersetzt die vom Plugin gezeichnete(n) Polyline(n) durch ein zweifarbiges
+// "Casing": breitere Randlinie (borderColor) unten, schmalere Mittellinie
+// (fillColor) oben drauf - klassischer Karten-Look fuer Routenlinien.
+function makeTwoToneTrack(gpxLayer, fillColor, borderColor, weight){
+  const polylines = [];
+  gpxLayer.eachLayer(sub => {
+    if (sub instanceof L.Polyline) polylines.push(sub);
+  });
+  polylines.forEach(poly => {
+    const latlngs = poly.getLatLngs();
+    gpxLayer.removeLayer(poly);
+    L.polyline(latlngs, {
+      color: borderColor, weight: weight + 3, opacity: 0.9,
+      lineJoin: 'round', lineCap: 'round'
+    }).addTo(gpxLayer);
+    L.polyline(latlngs, {
+      color: fillColor, weight: weight, opacity: 1,
+      lineJoin: 'round', lineCap: 'round'
+    }).addTo(gpxLayer);
+  });
+}
+
 const trackList = document.getElementById('trackList');
 const DEFAULT_TRACK_COLOR = "#e0862e";
 const elevationPanel = document.getElementById('elevationPanel');
@@ -651,6 +673,7 @@ fetch('tracks/manifest.json')
     manifest.forEach(entry => {
       const url = 'tracks/' + entry.file;
       const trackColor = entry.color || DEFAULT_TRACK_COLOR;
+      const borderColor = entry.borderColor || "#12150f";
       const label = entry.label || entry.file;
 
       const row = document.createElement('div');
@@ -674,6 +697,7 @@ fetch('tracks/manifest.json')
         // Start-/End-Marker pro Track-Segment (Garmin splittet oft bei
         // Pausen in viele <trkseg>) rekursiv entfernen, nur die Linie bleibt.
         stripAllMarkers(e.target);
+        makeTwoToneTrack(e.target, trackColor, borderColor, 3);
         const km = (e.target.get_distance() / 1000).toFixed(1);
         row.querySelector('.layer-count').textContent = km + ' km';
       });
