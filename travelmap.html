@@ -653,6 +653,7 @@ fetch('tracks/manifest.json')
 
       const gpxLayer = new L.GPX(url, {
         async: true,
+        gpx_options: { parseElements: ['track', 'route'] }, // Waypoints (<wpt>) nicht mit einlesen
         polyline_options: { color: trackColor, weight: 3, opacity: 0.85 }
       });
 
