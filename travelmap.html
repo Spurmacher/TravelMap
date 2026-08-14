@@ -578,6 +578,19 @@ updatePointCount();
 // Beispiel manifest.json:
 // [{"file":"2026-11-06.gpx","label":"Marokko Tag 1"}]
 // ---------------------------------------------------------------
+function stripAllMarkers(layer){
+  if (!layer.eachLayer) return;
+  const toRemove = [];
+  layer.eachLayer(sub => {
+    if (sub instanceof L.Marker) {
+      toRemove.push(sub);
+    } else if (sub.eachLayer) {
+      stripAllMarkers(sub);
+    }
+  });
+  toRemove.forEach(m => layer.removeLayer(m));
+}
+
 const trackList = document.getElementById('trackList');
 const DEFAULT_TRACK_COLOR = "#e0862e";
 const elevationPanel = document.getElementById('elevationPanel');
@@ -658,13 +671,9 @@ fetch('tracks/manifest.json')
       });
 
       gpxLayer.on('loaded', (e) => {
-        // Start-/End-/Wegpunkt-Marker des Plugins konsequent entfernen,
-        // nur die Track-Linie selbst soll sichtbar sein.
-        e.target.eachLayer(layer => {
-          if (layer instanceof L.Marker) {
-            e.target.removeLayer(layer);
-          }
-        });
+        // Start-/End-Marker pro Track-Segment (Garmin splittet oft bei
+        // Pausen in viele <trkseg>) rekursiv entfernen, nur die Linie bleibt.
+        stripAllMarkers(e.target);
         const km = (e.target.get_distance() / 1000).toFixed(1);
         row.querySelector('.layer-count').textContent = km + ' km';
       });
