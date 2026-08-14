@@ -197,6 +197,31 @@
   .map-wrap{position:relative;}
   #map{height:100%;width:100%;background:var(--bg-0);}
 
+  .elevation-panel{
+    position:absolute;
+    left:14px; right:14px; bottom:14px;
+    background:rgba(18,21,15,0.94);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:10px 14px 8px;
+    display:none;
+    z-index:1000;
+  }
+  .elevation-panel.open{display:block;}
+  .elevation-head{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'JetBrains Mono',monospace; font-size:11px;
+    color:var(--text-mute); margin-bottom:4px;
+  }
+  #elevationClose{cursor:pointer; font-size:16px; line-height:1; padding:0 4px;}
+  #elevationSvg{width:100%; height:70px; display:block;}
+  .elevation-meta{
+    display:flex; gap:16px;
+    font-family:'JetBrains Mono',monospace; font-size:10px;
+    color:var(--text-mute); margin-top:4px;
+  }
+  .elevation-meta b{color:var(--lcd); font-weight:500;}
+
   .leaflet-popup-content-wrapper{
     background:var(--bg-1);
     color:var(--text);
@@ -288,6 +313,14 @@
 
   <div class="map-wrap">
     <div id="map"></div>
+    <div class="elevation-panel" id="elevationPanel">
+      <div class="elevation-head">
+        <span id="elevationTitle"></span>
+        <span id="elevationClose">&times;</span>
+      </div>
+      <svg id="elevationSvg" viewBox="0 0 600 100" preserveAspectRatio="none"></svg>
+      <div class="elevation-meta" id="elevationMeta"></div>
+    </div>
   </div>
 </div>
 
@@ -546,7 +579,52 @@ updatePointCount();
 // [{"file":"2026-11-06.gpx","label":"Marokko Tag 1"}]
 // ---------------------------------------------------------------
 const trackList = document.getElementById('trackList');
-const TRACK_COLOR = "#5f9fc4";
+const DEFAULT_TRACK_COLOR = "#e0862e";
+const elevationPanel = document.getElementById('elevationPanel');
+const elevationSvg = document.getElementById('elevationSvg');
+const elevationTitle = document.getElementById('elevationTitle');
+const elevationMeta = document.getElementById('elevationMeta');
+document.getElementById('elevationClose').addEventListener('click', () => {
+  elevationPanel.classList.remove('open');
+});
+
+function renderElevationChart(gpxLayer, label, color){
+  const data = gpxLayer.get_elevation_data(); // [[distanceKm, elevationM], ...]
+  if (!data || data.length < 2) {
+    elevationSvg.innerHTML = '';
+    elevationMeta.innerHTML = 'Keine Hoehendaten in dieser GPX-Datei.';
+  } else {
+    const elevs = data.map(p => p[1]);
+    const minE = Math.min(...elevs), maxE = Math.max(...elevs);
+    const distTotal = data[data.length - 1][0];
+    const w = 600, h = 100, pad = 4;
+
+    const points = data.map(p => {
+      const x = (p[0] / distTotal) * w;
+      const y = h - pad - ((p[1] - minE) / (maxE - minE || 1)) * (h - pad * 2);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+
+    const areaPoints = `0,${h} ${points} ${w},${h}`;
+
+    elevationSvg.innerHTML = `
+      <polygon points="${areaPoints}" fill="${color}22" stroke="none"></polygon>
+      <polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.5"></polyline>
+    `;
+
+    const gain = gpxLayer.get_elevation_gain ? Math.round(gpxLayer.get_elevation_gain()) : null;
+    const loss = gpxLayer.get_elevation_loss ? Math.round(gpxLayer.get_elevation_loss()) : null;
+    elevationMeta.innerHTML = `
+      <span>MIN <b>${Math.round(minE)} m</b></span>
+      <span>MAX <b>${Math.round(maxE)} m</b></span>
+      ${gain !== null ? `<span>&uarr; <b>${gain} m</b></span>` : ''}
+      ${loss !== null ? `<span>&darr; <b>${loss} m</b></span>` : ''}
+      <span>DIST <b>${distTotal.toFixed(1)} km</b></span>
+    `;
+  }
+  elevationTitle.textContent = label;
+  elevationPanel.classList.add('open');
+}
 
 fetch('tracks/manifest.json')
   .then(r => r.ok ? r.json() : [])
@@ -559,23 +637,33 @@ fetch('tracks/manifest.json')
 
     manifest.forEach(entry => {
       const url = 'tracks/' + entry.file;
+      const trackColor = entry.color || DEFAULT_TRACK_COLOR;
+      const label = entry.label || entry.file;
+
       const row = document.createElement('div');
       row.className = 'layer-row on active';
       row.innerHTML = `
         <div class="checkbox"></div>
-        <div class="swatch" style="background:${TRACK_COLOR}"></div>
-        <div class="layer-name">${entry.label || entry.file}</div>
+        <div class="swatch" style="background:${trackColor}"></div>
+        <div class="layer-name">${label}</div>
+        <span class="elev-btn" title="Hoehenprofil" style="cursor:pointer;padding:0 4px;color:var(--text-mute);">&#9968;</span>
         <div class="layer-count">...</div>
       `;
       trackList.appendChild(row);
 
       const gpxLayer = new L.GPX(url, {
         async: true,
-        polyline_options: { color: TRACK_COLOR, weight: 3, opacity: 0.8 },
-        marker_options: { startIconUrl: null, endIconUrl: null, shadowUrl: null }
+        polyline_options: { color: trackColor, weight: 3, opacity: 0.85 }
       });
 
       gpxLayer.on('loaded', (e) => {
+        // Start-/End-/Wegpunkt-Marker des Plugins konsequent entfernen,
+        // nur die Track-Linie selbst soll sichtbar sein.
+        e.target.eachLayer(layer => {
+          if (layer instanceof L.Marker) {
+            e.target.removeLayer(layer);
+          }
+        });
         const km = (e.target.get_distance() / 1000).toFixed(1);
         row.querySelector('.layer-count').textContent = km + ' km';
       });
@@ -586,7 +674,11 @@ fetch('tracks/manifest.json')
 
       gpxLayer.addTo(map);
 
-      row.addEventListener('click', () => {
+      row.addEventListener('click', (ev) => {
+        if (ev.target.classList.contains('elev-btn')) {
+          renderElevationChart(gpxLayer, label, trackColor);
+          return;
+        }
         if (map.hasLayer(gpxLayer)) {
           map.removeLayer(gpxLayer);
           row.classList.remove('on', 'active');
