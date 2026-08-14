@@ -265,6 +265,11 @@
 
     <div class="divider"></div>
 
+    <div class="side-section-label">Tracks</div>
+    <div id="trackList"></div>
+
+    <div class="divider"></div>
+
     <div class="readout">
       <div class="rlabel">Letzte Auswahl</div>
       <div class="rval" id="coordReadout">
@@ -287,6 +292,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/2.1.2/gpx.min.js"></script>
 <script>document.write('<scr' + 'ipt src="data.js?v=' + Date.now() + '"></scr' + 'ipt>');</script>
 <script>
 // ---------------------------------------------------------------
@@ -531,6 +537,66 @@ Object.entries(CATEGORIES).forEach(([cat, cfg]) => {
 });
 
 updatePointCount();
+
+// ---------------------------------------------------------------
+// GPX-Tracks: unabhaengig vom Sheet/Sync, direkt aus dem Repo geladen.
+// tracks/manifest.json listet die Dateien auf - neuer Track = neue
+// Zeile dort, kein Anfassen von travelmap.html noetig.
+// Beispiel manifest.json:
+// [{"file":"2026-11-06.gpx","label":"Marokko Tag 1"}]
+// ---------------------------------------------------------------
+const trackList = document.getElementById('trackList');
+const TRACK_COLOR = "#5f9fc4";
+
+fetch('tracks/manifest.json')
+  .then(r => r.ok ? r.json() : [])
+  .catch(() => [])
+  .then(manifest => {
+    if (!manifest || manifest.length === 0) {
+      trackList.innerHTML = '<div class="note" style="margin:0 18px;">Keine Tracks (tracks/manifest.json fehlt oder leer).</div>';
+      return;
+    }
+
+    manifest.forEach(entry => {
+      const url = 'tracks/' + entry.file;
+      const row = document.createElement('div');
+      row.className = 'layer-row on active';
+      row.innerHTML = `
+        <div class="checkbox"></div>
+        <div class="swatch" style="background:${TRACK_COLOR}"></div>
+        <div class="layer-name">${entry.label || entry.file}</div>
+        <div class="layer-count">...</div>
+      `;
+      trackList.appendChild(row);
+
+      const gpxLayer = new L.GPX(url, {
+        async: true,
+        polyline_options: { color: TRACK_COLOR, weight: 3, opacity: 0.8 },
+        marker_options: { startIconUrl: null, endIconUrl: null, shadowUrl: null }
+      });
+
+      gpxLayer.on('loaded', (e) => {
+        const km = (e.target.get_distance() / 1000).toFixed(1);
+        row.querySelector('.layer-count').textContent = km + ' km';
+      });
+      gpxLayer.on('error', () => {
+        row.querySelector('.layer-count').textContent = '!';
+        row.title = 'Datei nicht gefunden: ' + url;
+      });
+
+      gpxLayer.addTo(map);
+
+      row.addEventListener('click', () => {
+        if (map.hasLayer(gpxLayer)) {
+          map.removeLayer(gpxLayer);
+          row.classList.remove('on', 'active');
+        } else {
+          map.addLayer(gpxLayer);
+          row.classList.add('on', 'active');
+        }
+      });
+    });
+  });
 </script>
 </body>
 </html>
