@@ -88,10 +88,13 @@ var DATA = $json;
 "@
  
 # --- 4. Nur committen, wenn sich wirklich etwas geändert hat ---
+# Vergleich nur anhand der reinen "var DATA = ..."-Zeile, nicht der ganzen Datei -
+# der Zeitstempel-Kommentar oben würde sonst bei jedem Lauf einen Unterschied vortäuschen.
 $hasChanges = $true
 if (Test-Path $DataFile) {
-    $existing = Get-Content $DataFile -Raw
-    if ($existing.Trim() -eq $jsContent.Trim()) {
+    $existingDataLine = (Get-Content $DataFile -Raw) -replace '(?s)^.*(var DATA = .*;)\s*$', '$1'
+    $newDataLine = "var DATA = $json;"
+    if ($existingDataLine.Trim() -eq $newDataLine.Trim()) {
         $hasChanges = $false
     }
 }
