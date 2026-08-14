@@ -131,6 +131,41 @@
     transform:rotate(45deg);
   }
 
+  .caret{
+    width:10px;height:10px;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--text-mute);
+    transition:transform .12s;
+    font-size:9px;
+  }
+  .caret.open{transform:rotate(90deg);}
+  .cat-row{padding-left:10px;}
+  .cat-row .layer-name{font-weight:500;}
+  .subcat-list{
+    display:none;
+    overflow:hidden;
+  }
+  .subcat-list.open{display:block;}
+  .subcat-row{
+    display:flex;align-items:center;gap:10px;
+    padding:6px 18px 6px 40px;
+    cursor:pointer;
+    border-left:2px solid transparent;
+    transition:background .12s;
+  }
+  .subcat-row:hover{background:var(--bg-2);}
+  .subcat-row .layer-name{font-size:12px;color:var(--text-mute);}
+  .subcat-row.on .layer-name{color:var(--text);}
+  .subcat-row .checkbox{width:12px;height:12px;}
+  .subcat-row.on .checkbox::after{
+    content:'';
+    position:absolute;left:2px;top:-1px;
+    width:4px;height:7px;
+    border:solid var(--bg-0);
+    border-width:0 2px 2px 0;
+    transform:rotate(45deg);
+  }
+
   .divider{height:1px;background:var(--line);margin:10px 0;}
 
   .readout{
@@ -269,6 +304,19 @@ const CATEGORIES = {
   "Social":        { hex:"#e0b04a" },
 };
 
+// Muss inhaltlich zu ALLOWED_CATEGORIES in Code.gs / CATEGORIES in capture.html passen.
+// Nur für die Sidebar-Filterliste nötig, keine Validierung hier.
+const SUBCATEGORIES = {
+  "Accommodation": ["Wild Camp", "Parking Spot", "Campsite", "Hotel", "Guesthouse"],
+  "Checkpoints":   ["Border Crossing", "Police Checkpoint", "Military Checkpoint"],
+  "Logistics":     ["Water", "Fuel", "SIM/Internet", "Shopping", "ATM", "Money Exchange", "Workshop", "Spare Parts"],
+  "Danger":        ["Road Condition", "Safety Warning", "Avoid Area", "Natural Hazard"],
+  "Sightseeing":   ["Attraction", "Viewpoint", "Hike", "Beach", "Culture"],
+  "Country Info":  ["Description"],
+  "Route":         [],
+  "Social":        ["Blog Entry", "Meet Friends"],
+};
+
 // DATA wird aus data.js geladen (siehe <script src="data.js"> weiter unten).
 // data.js wird von sync-map.ps1 automatisch aus dem Google Sheet erzeugt und
 // enthält ein Array von Punkten mit den Feldern:
@@ -320,15 +368,28 @@ function makeIcon(hex){
   });
 }
 
-const layerGroups = {};
-Object.keys(CATEGORIES).forEach(cat => layerGroups[cat] = L.layerGroup());
+// Gruppenschlüssel: "Category||Subcategory" (leerer Subcategory-Teil bei Route
+// oder falls im Sheet mal keine Subcategory gesetzt ist).
+function groupKey(cat, sub){ return cat + "||" + (sub || ""); }
 
-const markersByCat = {};
-Object.keys(CATEGORIES).forEach(cat => markersByCat[cat] = []);
+const layerGroups = {};
+const markersByKey = {};
+Object.entries(SUBCATEGORIES).forEach(([cat, subs]) => {
+  const keys = subs.length ? subs.map(s => groupKey(cat, s)) : [groupKey(cat, "")];
+  keys.forEach(k => { layerGroups[k] = L.layerGroup(); markersByKey[k] = []; });
+});
 
 DATA.forEach(pt => {
   const cfg = CATEGORIES[pt.category];
   if (!cfg) { console.warn('Unbekannte Category, übersprungen:', pt.category, pt); return; }
+
+  let key = groupKey(pt.category, pt.subcategory);
+  if (!layerGroups[key]) {
+    // Subcategory im Datensatz unbekannt/leer, aber Category gültig -> eigene
+    // Sammelgruppe statt den Punkt stillschweigend zu verlieren.
+    key = groupKey(pt.category, "");
+    if (!layerGroups[key]) { layerGroups[key] = L.layerGroup(); markersByKey[key] = []; }
+  }
 
   const marker = L.marker([pt.lat, pt.lon], { icon: makeIcon(cfg.hex) });
   const subLabel = pt.subcategory ? ` · ${pt.subcategory}` : '';
@@ -344,8 +405,8 @@ DATA.forEach(pt => {
     <div class="pop-meta"><span>${pt.date || ''}${pt.time ? ' · ' + pt.time : ''}</span><span>${pt.lat.toFixed(4)}, ${pt.lon.toFixed(4)}</span></div>
   `);
   marker.on('click', () => updateReadout(pt, cfg));
-  marker.addTo(layerGroups[pt.category]);
-  markersByCat[pt.category].push(marker);
+  marker.addTo(layerGroups[key]);
+  markersByKey[key].push(marker);
 });
 
 // Verbindungslinie entlang der Route-Punkte, chronologisch sortiert
@@ -358,12 +419,12 @@ if (routeSorted.length > 1) {
   ).addTo(map);
 }
 
-const activeLayers = new Set(Object.keys(CATEGORIES));
-Object.keys(CATEGORIES).forEach(cat => layerGroups[cat].addTo(map));
+const activeGroups = new Set(Object.keys(layerGroups));
+Object.values(layerGroups).forEach(g => g.addTo(map));
 
 function updatePointCount(){
   let n = 0;
-  activeLayers.forEach(cat => n += markersByCat[cat].length);
+  activeGroups.forEach(k => n += (markersByKey[k] ? markersByKey[k].length : 0));
   document.getElementById('pointCount').textContent = n;
 }
 
@@ -376,31 +437,96 @@ function updateReadout(pt, cfg){
 }
 
 // ---------------------------------------------------------------
-// Sidebar: Layer-Liste rendern
+// Sidebar: Category-Zeilen mit aufklappbaren Subcategory-Listen
 // ---------------------------------------------------------------
+function setGroupState(row, key, on){
+  if (on) {
+    map.addLayer(layerGroups[key]);
+    activeGroups.add(key);
+    row.classList.add('on','active');
+  } else {
+    map.removeLayer(layerGroups[key]);
+    activeGroups.delete(key);
+    row.classList.remove('on','active');
+  }
+}
+
 const layerList = document.getElementById('layerList');
+
 Object.entries(CATEGORIES).forEach(([cat, cfg]) => {
-  const row = document.createElement('div');
-  row.className = 'layer-row on active';
-  row.innerHTML = `
+  const subs = SUBCATEGORIES[cat] || [];
+  const catCount = subs.length
+    ? subs.reduce((n, s) => n + (markersByKey[groupKey(cat, s)] || []).length, 0) + (markersByKey[groupKey(cat, "")] || []).length
+    : (markersByKey[groupKey(cat, "")] || []).length;
+
+  const catRow = document.createElement('div');
+  catRow.className = 'layer-row cat-row on active';
+  catRow.innerHTML = `
+    <div class="caret${subs.length ? '' : ' hidden'}" style="${subs.length ? '' : 'visibility:hidden;'}">&#9656;</div>
     <div class="checkbox"></div>
     <div class="swatch" style="background:${cfg.hex}"></div>
     <div class="layer-name">${cat}</div>
-    <div class="layer-count">${markersByCat[cat].length}</div>
+    <div class="layer-count">${catCount}</div>
   `;
-  row.addEventListener('click', () => {
-    if (activeLayers.has(cat)) {
-      map.removeLayer(layerGroups[cat]);
-      activeLayers.delete(cat);
-      row.classList.remove('on','active');
-    } else {
-      map.addLayer(layerGroups[cat]);
-      activeLayers.add(cat);
-      row.classList.add('on','active');
+
+  // Subcategory-Container (nur falls vorhanden)
+  let subList = null;
+  const subRows = [];
+  if (subs.length) {
+    subList = document.createElement('div');
+    subList.className = 'subcat-list';
+
+    subs.forEach(sub => {
+      const key = groupKey(cat, sub);
+      if (!layerGroups[key]) return;
+      const count = markersByKey[key].length;
+
+      const subRow = document.createElement('div');
+      subRow.className = 'subcat-row on';
+      subRow.innerHTML = `
+        <div class="checkbox"></div>
+        <div class="layer-name">${sub}</div>
+        <div class="layer-count">${count}</div>
+      `;
+      subRow.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setGroupState(subRow, key, !activeGroups.has(key));
+        updatePointCount();
+      });
+      subList.appendChild(subRow);
+      subRows.push(subRow);
+    });
+  } else {
+    // Category ohne Subcategories (z.B. Route) -> Category-Klick steuert direkt die einzige Gruppe
+  }
+
+  // Klick auf Category-Zeile: Caret klappt auf/zu, Checkbox/Name/Swatch togglen alles darunter
+  catRow.addEventListener('click', (e) => {
+    const caret = catRow.querySelector('.caret');
+    const clickedCaret = e.target === caret;
+
+    if (clickedCaret && subs.length) {
+      caret.classList.toggle('open');
+      subList.classList.toggle('open');
+      return;
     }
+
+    const turnOn = !catRow.classList.contains('on');
+    if (subs.length) {
+      subs.forEach(sub => {
+        const key = groupKey(cat, sub);
+        const idx = subs.indexOf(sub);
+        if (layerGroups[key]) setGroupState(subRows[idx], key, turnOn);
+      });
+    } else {
+      setGroupState(catRow, groupKey(cat, ""), turnOn);
+    }
+    if (turnOn) { catRow.classList.add('on','active'); } else { catRow.classList.remove('on','active'); }
     updatePointCount();
   });
-  layerList.appendChild(row);
+
+  layerList.appendChild(catRow);
+  if (subList) layerList.appendChild(subList);
 });
 
 updatePointCount();
