@@ -1,7 +1,7 @@
 [
   {"file": "Tracks-20250717-20250917.gpx", "label": "Central Asia Part I",   "color": "#FF7518", "borderColor": "#12150f"},
-  {"file": "Tracks-20251009-20251216.gpx", "label": "Central Asia Part II",  "color": "#5f9fc4", "borderColor": "#12150f"},
-  {"file": "Tracks-20260107-20260208.gpx", "label": "Central Asia Part III", "color": "#fe66ff", "borderColor": "#fe66ff"},
-  {"file": "Tracks-20260208-20260316.gpx", "label": "Central Asia Part IV",  "color": "#e0862e", "borderColor": "#12150f"},
-  {"file": "Tracks-20260318-20260810.gpx", "label": "Central Asia Part V",   "color": "#ffe600", "borderColor": "#000001"}  
+  {"file": "Tracks-20251009-20251216.gpx", "label": "Central Asia Part II",  "color": "##00fff1", "borderColor": "#12150f"},
+  {"file": "Tracks-20260107-20260208.gpx", "label": "Central Asia Part III", "color": "#ff20a2", "borderColor": "#fe66ff"},
+  {"file": "Tracks-20260208-20260316.gpx", "label": "Central Asia Part IV",  "color": "#73f9ff", "borderColor": "#73f9ff"},
+  {"file": "Tracks-20260318-20260810.gpx", "label": "Central Asia Part V",   "color": "#7d36ff", "borderColor": "#7d36ff"}  
 ]
