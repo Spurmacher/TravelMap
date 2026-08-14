@@ -603,7 +603,7 @@ function makeTwoToneTrack(gpxLayer, fillColor, borderColor, weight){
     const latlngs = poly.getLatLngs();
     gpxLayer.removeLayer(poly);
     L.polyline(latlngs, {
-      color: borderColor, weight: weight + 3, opacity: 0.9,
+      color: borderColor, weight: weight + 6, opacity: 0.9,
       lineJoin: 'round', lineCap: 'round'
     }).addTo(gpxLayer);
     L.polyline(latlngs, {
