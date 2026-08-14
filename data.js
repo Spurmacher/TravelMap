@@ -1,3 +1,3 @@
 ﻿// Automatisch generiert von sync-map.ps1â€ nicht manuell bearbeiten.
-// Quelle: Google Sheet, synchronisiert am 2026-08-14 18:02
-var DATA = [{"id":"pt_1786533971519_shjrd4","date":"2026-08-11","category":"Accommodation","subcategory":"Guesthouse","title":"Hüsli","note":"Bereits um 5:30 aufgestanden","lat":47.42389615579166,"lon":9.557767793060203,"photoUrl":"","infoUrl":"","country":"Switzerland"},{"id":"pt_1786549265081_uxg9sk","date":"2026-08-11","category":"Social","subcategory":"Meet Friends","title":"Beim Ruedi und Brigitte","note":"Zu Besuch bei Bühris","lat":47.46023507286385,"lon":8.780131081031971,"photoUrl":"","infoUrl":"","country":""}];
+// Quelle: Google Sheet, synchronisiert am 2026-08-14 18:09
+var DATA = [{"id":"pt_1786723723367_ctaaid","date":"2026-08-13","category":"Accommodation","subcategory":"Guesthouse","title":"Im Hüsli","note":"","lat":47.42388279215736,"lon":9.557773353836595,"photoUrl":"https://drive.google.com/thumbnail?id=1eaIneoYJctyUD8onaP1TPLjy3l0Zo6fv\u0026sz=w1600","infoUrl":"","country":""}];
