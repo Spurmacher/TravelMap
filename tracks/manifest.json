@@ -1,6 +1,5 @@
 [
-  {"file": "Mongolia.gpx", "label": "Central Asia 2025",   "color": "#7d36ff", "borderColor": "#00001"},
-  {"file": "Tracks-20251009-20251216.gpx", "label": "Central Asia Part II",  "color": "##00fff1", "borderColor": "#12150f"},
-  {"file": "Tracks-20260107-20260208.gpx", "label": "Central Asia Part III", "color": "#ff20a2", "borderColor": "#fe66ff"},
-  {"file": "Tracks-20260208-20260316.gpx", "label": "Central Asia Part IV",  "color": "#73f9ff", "borderColor": "#73f9ff"}
+  {"file": "Winterthur-Mongolia2025.gpx", "label": "Central Asia 2025",   "color": "#7d36ff", "borderColor": "#00001"},
+  {"file": "beijing-hamburg2026.gpx",     "label": "Central Asia 2026",  "color": "##00fff1", "borderColor": "#12150f"},
+  {"file": "marocco2024.gpx", "label": "Marocco 2024", "color": "#ff20a2", "borderColor": "#fe66ff"}
 ]
