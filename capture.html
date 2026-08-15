@@ -49,6 +49,13 @@
     margin-top:8px; max-width:100%; border-radius:6px; border:1px solid var(--line);
     display:none;
   }
+  .photo-preview-list{
+    display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;
+  }
+  .photo-preview-list img{
+    width:68px; height:68px; object-fit:cover;
+    border-radius:6px; border:1px solid var(--line);
+  }
   .status{
     margin-top:16px; padding:11px 12px; border-radius:6px; font-size:13px;
     font-family:'JetBrains Mono',monospace; display:none;
@@ -94,9 +101,9 @@
   </div>
 </div>
 
-<label>Photo</label>
-<input type="file" id="photo" accept="image/*">
-<img id="photoPreview" class="photo-preview">
+<label>Photos <span style="text-transform:none;color:var(--text-mute);">(max. 5)</span></label>
+<input type="file" id="photo" accept="image/*" multiple>
+<div id="photoPreviewList" class="photo-preview-list"></div>
 <div class="hint" id="photoHint"></div>
 
 <label>Location</label>
@@ -115,7 +122,7 @@
 // ==============================================================
 // CONFIG vor dem Hosten ausfüllen
 // ==============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwNqDhBBGipsmlkmpFhA4KdW0vBfcKr3hPuZOb7ylQDCj6IJuNggCQ6uO5hRaoP0CqZ9A/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwxL-dt1JxdleGFqiuppGlUrrPiOqSvUdB5wsloe9liMQM3HkDepkYZ_WSpQ1Mhl6s4lA/exec";
 const WRITE_SECRET = "FuerMeinSchutz:#!";
 const MAX_PHOTO_WIDTH = 1600;
 const JPEG_QUALITY = 0.7;
@@ -190,39 +197,66 @@ document.getElementById('btnLocation').addEventListener('click', () => {
 });
 
 // ==============================================================
-// Foto: einlesen + komprimieren (Canvas-Resize + JPEG-Qualität)
+// Fotos: mehrere einlesen + je einzeln komprimieren (Canvas-Resize + JPEG)
 // ==============================================================
-let photoBase64 = null;
-document.getElementById('photo').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  const hint = document.getElementById('photoHint');
-  if (!file) { photoBase64 = null; return; }
+const MAX_PHOTOS = 5;
+let photosBase64 = [];
 
-  hint.textContent = "Komprimiere Bild";
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    const img = new Image();
-    img.onload = () => {
-      let w = img.width, h = img.height;
-      if (w > MAX_PHOTO_WIDTH) {
-        h = Math.round(h * (MAX_PHOTO_WIDTH / w));
-        w = MAX_PHOTO_WIDTH;
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      photoBase64 = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
-
-      const preview = document.getElementById('photoPreview');
-      preview.src = photoBase64;
-      preview.style.display = 'block';
-
-      const kb = Math.round(photoBase64.length * 0.73 / 1024);
-      hint.textContent = `Komprimiert auf ~${kb} KB (${w}—${h}px).`;
+function compressImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > MAX_PHOTO_WIDTH) {
+          h = Math.round(h * (MAX_PHOTO_WIDTH / w));
+          w = MAX_PHOTO_WIDTH;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
+      };
+      img.onerror = reject;
+      img.src = ev.target.result;
     };
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('photo').addEventListener('change', async (e) => {
+  const hint = document.getElementById('photoHint');
+  const previewList = document.getElementById('photoPreviewList');
+  let files = Array.from(e.target.files || []);
+
+  if (files.length === 0) { photosBase64 = []; previewList.innerHTML = ''; return; }
+
+  let extraNote = '';
+  if (files.length > MAX_PHOTOS) {
+    extraNote = ` (nur die ersten ${MAX_PHOTOS} von ${files.length} verwendet)`;
+    files = files.slice(0, MAX_PHOTOS);
+  }
+
+  photosBase64 = [];
+  previewList.innerHTML = '';
+
+  for (let i = 0; i < files.length; i++) {
+    hint.textContent = `Komprimiere Foto ${i + 1}/${files.length}...`;
+    try {
+      const b64 = await compressImageFile(files[i]);
+      photosBase64.push(b64);
+      const img = document.createElement('img');
+      img.src = b64;
+      previewList.appendChild(img);
+    } catch (err) {
+      console.warn('Foto konnte nicht verarbeitet werden:', err);
+    }
+  }
+
+  const totalKb = Math.round(photosBase64.reduce((n, b) => n + b.length * 0.73, 0) / 1024);
+  hint.textContent = `${photosBase64.length} Foto(s), ~${totalKb} KB gesamt${extraNote}`;
 });
 
 // ==============================================================
@@ -259,7 +293,7 @@ function buildPayload() {
     note: document.getElementById('note').value.trim(),
     lat: currentLat,
     lon: currentLon,
-    photoBase64: photoBase64,
+    photosBase64: photosBase64,
     infoUrl: document.getElementById('infoUrl').value.trim(),
     country: document.getElementById('country').value.trim(),
   };
@@ -294,9 +328,9 @@ function resetForm() {
   document.getElementById('country').value = "";
   document.getElementById('infoUrl').value = "";
   document.getElementById('photo').value = "";
-  document.getElementById('photoPreview').style.display = "none";
+  document.getElementById('photoPreviewList').innerHTML = "";
   document.getElementById('photoHint').textContent = "";
-  photoBase64 = null;
+  photosBase64 = [];
 }
 
 document.getElementById('btnSubmit').addEventListener('click', async () => {

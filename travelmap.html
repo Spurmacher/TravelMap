@@ -245,6 +245,31 @@
     color:var(--text);
   }
   .pop-note{font-size:12px;color:#c9c4b3;line-height:1.5;margin-bottom:6px;}
+  .pop-gallery-wrap{position:relative; margin-bottom:8px;}
+  .pop-gallery{
+    display:flex; overflow-x:auto; scroll-snap-type:x mandatory;
+    border-radius:4px; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  }
+  .pop-gallery::-webkit-scrollbar{display:none;}
+  .pop-gallery img{
+    flex:0 0 100%; width:100%; height:160px; object-fit:cover;
+    scroll-snap-align:start;
+  }
+  .gal-prev, .gal-next{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:24px; height:24px; border-radius:50%;
+    background:rgba(18,21,15,0.7); color:var(--sand);
+    border:none; font-size:14px; line-height:22px; text-align:center;
+    cursor:pointer; padding:0;
+  }
+  .gal-prev{left:4px;}
+  .gal-next{right:4px;}
+  .gal-counter{
+    position:absolute; right:6px; bottom:6px;
+    background:rgba(18,21,15,0.75); color:var(--text);
+    font-family:'JetBrains Mono',monospace; font-size:10px;
+    padding:2px 6px; border-radius:10px;
+  }
   .pop-meta{
     font-family:'JetBrains Mono',monospace;
     font-size:10px;color:var(--text-mute);
@@ -420,6 +445,28 @@ Object.entries(SUBCATEGORIES).forEach(([cat, subs]) => {
   keys.forEach(k => { layerGroups[k] = L.layerGroup(); markersByKey[k] = []; });
 });
 
+// Reagiert auf jedes geoeffnete Popup mit Mehrfach-Galerie: Pfeile + Zaehler verdrahten.
+function wireGallery(e){
+  const popupEl = e.popup.getElement ? e.popup.getElement() : null;
+  if (!popupEl) return;
+  const gallery = popupEl.querySelector('.pop-gallery');
+  if (!gallery) return;
+  const counter = popupEl.querySelector('.gal-counter');
+  const total = gallery.children.length;
+
+  function updateCounter(){
+    const idx = Math.round(gallery.scrollLeft / gallery.clientWidth) + 1;
+    if (counter) counter.textContent = Math.min(idx, total) + ' / ' + total;
+  }
+  gallery.addEventListener('scroll', updateCounter);
+
+  const prevBtn = popupEl.querySelector('.gal-prev');
+  const nextBtn = popupEl.querySelector('.gal-next');
+  if (prevBtn) prevBtn.addEventListener('click', () => gallery.scrollBy({ left: -gallery.clientWidth, behavior: 'smooth' }));
+  if (nextBtn) nextBtn.addEventListener('click', () => gallery.scrollBy({ left: gallery.clientWidth, behavior: 'smooth' }));
+  updateCounter();
+}
+
 DATA.forEach(pt => {
   const cfg = CATEGORIES[pt.category];
   if (!cfg) { console.warn('Unbekannte Category, übersprungen:', pt.category, pt); return; }
@@ -434,7 +481,25 @@ DATA.forEach(pt => {
 
   const marker = L.marker([pt.lat, pt.lon], { icon: makeIcon(cfg.hex) });
   const subLabel = pt.subcategory ? ` · ${pt.subcategory}` : '';
-  const photoHtml = pt.photoUrl ? `<img src="${pt.photoUrl}" style="width:100%;border-radius:4px;margin-bottom:8px;">` : '';
+
+  // photoUrl kann mehrere, durch " | " getrennte URLs enthalten (mehrere Fotos pro Punkt)
+  const photos = (pt.photoUrl || '').split('|').map(s => s.trim()).filter(Boolean);
+  let photoHtml = '';
+  if (photos.length === 1) {
+    photoHtml = `<img src="${photos[0]}" style="width:100%;border-radius:4px;margin-bottom:8px;">`;
+  } else if (photos.length > 1) {
+    photoHtml = `
+      <div class="pop-gallery-wrap">
+        <div class="pop-gallery">
+          ${photos.map(u => `<img src="${u}">`).join('')}
+        </div>
+        <button class="gal-prev" type="button">&lsaquo;</button>
+        <button class="gal-next" type="button">&rsaquo;</button>
+        <div class="gal-counter">1 / ${photos.length}</div>
+      </div>
+    `;
+  }
+
   const infoHtml = pt.infoUrl ? `<a href="${pt.infoUrl}" target="_blank" style="color:${cfg.hex};font-size:11px;">Mehr Infos â†’</a><br>` : '';
 
   marker.bindPopup(`
@@ -445,6 +510,9 @@ DATA.forEach(pt => {
     ${infoHtml}
     <div class="pop-meta"><span>${pt.date || ''}${pt.time ? ' · ' + pt.time : ''}</span><span>${pt.lat.toFixed(4)}, ${pt.lon.toFixed(4)}</span></div>
   `);
+  if (photos.length > 1) {
+    marker.on('popupopen', wireGallery);
+  }
   marker.on('click', () => updateReadout(pt, cfg));
   marker.addTo(layerGroups[key]);
   markersByKey[key].push(marker);

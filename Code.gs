@@ -22,6 +22,7 @@ const CONFIG = {
   PHOTO_FOLDER_ID: "1H9FDkUuveQS8SWvWUN_zjGOU0Ia7k2K4",  // Google Drive Ordner für Fotos
   WRITE_SECRET: "FuerMeinSchutz:#!",  // schützt doPost vor Fremdzugriff
   MAX_PHOTO_BYTES: 7 * 1024 * 1024,   // ~7 MB decoded, Apps-Script-Sicherheitsmarge
+  MAX_PHOTO_COUNT: 5,                 // serverseitige Obergrenze, unabhaengig vom Client
 };
 
 const ALLOWED_CATEGORIES = {
@@ -92,16 +93,36 @@ function doPost(e) {
         if (String(data[i][0]) === id) { existingRow = i + 1; break; }
       }
 
-      // --- Foto optional verarbeiten ---
-	  let photoUrl = body.photoUrl || "";
+      // --- Fotos optional verarbeiten (mehrere, kommagetrennt in einer Zelle) ---
+      let photoUrl = body.photoUrl || "";
       let photoWarning = "";
-      if (body.photoBase64) {
-        const uploaded = uploadPhoto(body.photoBase64, id);
-        if (uploaded === null) {
-          photoUrl = ""; // Punkt wird trotzdem gespeichert, nur ohne Foto
-          photoWarning = "Foto zu gross oder Upload fehlgeschlagen — Punkt wurde ohne Foto gespeichert.";
-        } else {
-          photoUrl = uploaded;
+      // Neues Feld photosBase64 (Array) bevorzugt; altes Einzelfeld photoBase64
+      // bleibt als Fallback kompatibel (z.B. fuer noch wartende Queue-Eintraege
+      // aus einer aelteren capture.html-Version).
+      let photosToUpload = [];
+      if (Array.isArray(body.photosBase64) && body.photosBase64.length) {
+        photosToUpload = body.photosBase64;
+      } else if (body.photoBase64) {
+        photosToUpload = [body.photoBase64];
+      }
+
+      if (photosToUpload.length > CONFIG.MAX_PHOTO_COUNT) {
+        photosToUpload = photosToUpload.slice(0, CONFIG.MAX_PHOTO_COUNT);
+      }
+
+      if (photosToUpload.length) {
+        const uploaded = [];
+        let failCount = 0;
+        photosToUpload.forEach((b64, i) => {
+          const url = uploadPhoto(b64, id + "_" + i);
+          if (url) { uploaded.push(url); } else { failCount++; }
+        });
+        photoUrl = uploaded.join(" | ");
+        if (failCount > 0) {
+          photoWarning = `${failCount} von ${photosToUpload.length} Foto(s) konnten nicht hochgeladen werden (zu gross oder Fehler) — Rest wurde gespeichert.`;
+        }
+        if (uploaded.length === 0 && failCount > 0) {
+          photoWarning = "Alle Fotos zu gross oder Upload fehlgeschlagen — Punkt wurde ohne Foto gespeichert.";
         }
       }
 
