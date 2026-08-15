@@ -115,7 +115,7 @@
 // ==============================================================
 // CONFIG vor dem Hosten ausfüllen
 // ==============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzN-D9RRH0Mjn-e5jIXBPLcpUGNzpL6zGINtfzgAOWuvOXMEhg6y1x15x8ngbX3ysNyfw/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwNqDhBBGipsmlkmpFhA4KdW0vBfcKr3hPuZOb7ylQDCj6IJuNggCQ6uO5hRaoP0CqZ9A/exec";
 const WRITE_SECRET = "FuerMeinSchutz:#!";
 const MAX_PHOTO_WIDTH = 1600;
 const JPEG_QUALITY = 0.7;
@@ -125,17 +125,18 @@ const QUEUE_KEY = "travelpoint_pending_queue";
 // Kategorie-Baum
 // ==============================================================
 const CATEGORIES = {
-
-  "Accommodation": ["Wild Camp", "Parking Spot", "Campsite", "Hotel", "Guesthouse"],
+  "Accommodation": ["Wild Camp", "Campsite", "Parking Log", "Hotel", "Guesthouse", "Other"],
   "Checkpoints":   ["Border Crossing", "Police Checkpoint", "Military Checkpoint"],
-  "Logistics":     ["Water", "Fuel", "SIM/Internet", "Shopping", "ATM", "Money Exchange", "Workshop", "Spare Parts" ],
-  "Danger":        ["Road Condition", "Safety Warning", "Avoid Area", "Natural Hazard"],
-  "Sightseeing":   ["Attraction", "Viewpoint", "Hike", "Beach", "Culture"],
-  "Country Info":  ["Description"],
-  "Route":         [""],
-  "Social":        ["Blog Entry", "Meet Friends"],
+  "Logistics":     ["Water", "Fuel", "SIM/Internet", "Car Insurance", "Shopping", "ATM & Exchange", "Workshop", "Spare Parts", "Laundry" ],
+  "Danger":        ["Road Condition", "Safety Warning", "Avoid Area", "Natural Hazard", ],
+  "Sightseeing":   ["Attraction", "Viewpoint", "Hike", "Beach", "Culture", "National Park", "Scenery" ],
+  "Country Info":  ["General Information"],
+  "Embassy":       ["General Information"],
+  "Social":        ["Blog Entry", "Meetup"],
 };
 
+
+ 
 const catSelect = document.getElementById('category');
 const subSelect = document.getElementById('subcategory');
 Object.keys(CATEGORIES).forEach(cat => {
