@@ -1,4 +1,6 @@
 [
+  {"file": "winterthur-mongolia2025_Elevation.gpx",          "label": "2025 CA1",    "color": "#7d36ff", "borderColor": "#000001"},
+  {"file": "beijing-hamburg2026_Elevation.gpx",              "label": "2026 CA2",    "color": "#7d36ff", "borderColor": "#000001"},
   {"file": "winterthur-mongolia2025.gpx",                    "label": "2025 Central Asia",    "color": "#7d36ff", "borderColor": "#000001"},
   {"file": "beijing-hamburg2026.gpx",                        "label": "2026 Central Asia",    "color": "#7d36ff", "borderColor": "#000001"},
   {"file": "marokko2025_Enhanced_Elevation.gpx",             "label": "2024 Marocco",         "color": "#FF34B3", "borderColor": "#ffff00"}
