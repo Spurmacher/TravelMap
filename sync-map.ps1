@@ -19,7 +19,8 @@ param(
 $EndpointUrl = "https://script.google.com/macros/s/AKfycbzN-D9RRH0Mjn-e5jIXBPLcpUGNzpL6zGINtfzgAOWuvOXMEhg6y1x15x8ngbX3ysNyfw/exec"
 $RepoPath    = "C:\Daten WORK\Reisen\Frieda_WorldTour\Media\InteractiveMap\TravelMap"   # lokaler Git-Klon des Karten-Repos
 $DataFile    = Join-Path $RepoPath "data.js"
-$LogFile     = Join-Path $RepoPath "sync-log.txt"
+$LogPath     = "C:\Daten WORK\Reisen\Frieda_WorldTour\Media\InteractiveMap\"
+$LogFile     = Join-Path $LogPath "sync-log.txt"
 
 # ------------------------------------------------------------
 function Write-Log {
