@@ -19,7 +19,7 @@
     --text-mute:#8b8b78;
     --lcd:#9ecb6a;
     --lcd-dim:#4f6b3a;
-    --c-route:#cbb389;
+    --c-embassy:#cbb389;
     --c-camp:#7fae5c;
     --c-border:#d9973a;
     --c-logistik:#5f9fc4;
@@ -340,23 +340,24 @@ const CATEGORIES = {
   "Danger":        { hex:"#c1462f" },
   "Sightseeing":   { hex:"#a884c4" },
   "Country Info":  { hex:"#c9c2a3" },
-  "Route":         { hex:"#cbb389" },
+  "Embassy":       { hex:"#cbb389" },
   "Social":        { hex:"#e0b04a" },
 };
 
 // Muss inhaltlich zu ALLOWED_CATEGORIES in Code.gs / CATEGORIES in capture.html passen.
 // Nur für die Sidebar-Filterliste nötig, keine Validierung hier.
 const SUBCATEGORIES = {
-  "Accommodation": ["Wild Camp", "Parking Spot", "Campsite", "Hotel", "Guesthouse"],
+  "Accommodation": ["Wild Camp", "Campsite", "Parking Log", "Hotel", "Guesthouse", "Other"],
   "Checkpoints":   ["Border Crossing", "Police Checkpoint", "Military Checkpoint"],
-  "Logistics":     ["Water", "Fuel", "SIM/Internet", "Shopping", "ATM", "Money Exchange", "Workshop", "Spare Parts"],
-  "Danger":        ["Road Condition", "Safety Warning", "Avoid Area", "Natural Hazard"],
-  "Sightseeing":   ["Attraction", "Viewpoint", "Hike", "Beach", "Culture"],
-  "Country Info":  ["Description"],
-  "Route":         [],
-  "Social":        ["Blog Entry", "Meet Friends"],
+  "Logistics":     ["Water", "Fuel", "SIM/Internet", "Car Insurance", "Shopping", "ATM & Exchange", "Workshop", "Spare Parts", "Laundry" ],
+  "Danger":        ["Road Condition", "Safety Warning", "Avoid Area", "Natural Hazard", ],
+  "Sightseeing":   ["Attraction", "Viewpoint", "Hike", "Beach", "Culture", "National Park", "Scenery" ],
+  "Country Info":  ["General Information"],
+  "Embassy":       ["General Information"],
+  "Social":        ["Blog Entry", "Meetup"],
 };
 
+ 
 // DATA wird aus data.js geladen (siehe <script src="data.js"> weiter unten).
 // data.js wird von sync-map.ps1 automatisch aus dem Google Sheet erzeugt und
 // enthält ein Array von Punkten mit den Feldern:
@@ -408,7 +409,7 @@ function makeIcon(hex){
   });
 }
 
-// Gruppenschlüssel: "Category||Subcategory" (leerer Subcategory-Teil bei Route
+// Gruppenschlüssel: "Category||Subcategory" 
 // oder falls im Sheet mal keine Subcategory gesetzt ist).
 function groupKey(cat, sub){ return cat + "||" + (sub || ""); }
 
@@ -449,15 +450,6 @@ DATA.forEach(pt => {
   markersByKey[key].push(marker);
 });
 
-// Verbindungslinie entlang der Route-Punkte, chronologisch sortiert
-const routeSorted = DATA.filter(d => d.category === "Route" && d.date)
-  .slice().sort((a, b) => `${a.date} ${a.time || ''}`.localeCompare(`${b.date} ${b.time || ''}`));
-if (routeSorted.length > 1) {
-  L.polyline(
-    routeSorted.map(d => [d.lat, d.lon]),
-    { color: CATEGORIES["Route"].hex, weight: 2, opacity: 0.7, dashArray: "1 6" }
-  ).addTo(map);
-}
 
 const activeGroups = new Set(Object.keys(layerGroups));
 Object.values(layerGroups).forEach(g => g.addTo(map));
