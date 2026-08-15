@@ -7,7 +7,7 @@
  *
  * SETUP (einmalig):
  *  1. Neues Google Sheet anlegen, Kopfzeile in Zeile 1 exakt so:
- *     ID | Date | Category | Subcategory | Title | Note | Lat | Lon | Photo-URL | Info-URL | Country
+ *     ID | Date | Time | Category | Subcategory | Title | Note | Lat | Lon | Photo-URL | Info-URL | Country | Temperature | Weather
  *  2. Erweiterungen -> Apps Script -> diesen Code einfügen
  *  3. CONFIG unten ausfüllen (Ordner-ID für Fotos, eigenes Secret setzen)
  *  4. Bereitstellen -> Neue Bereitstellung -> Web-App
@@ -36,7 +36,7 @@ const ALLOWED_CATEGORIES = {
   "Social":        ["Blog Entry", "Meetup"],
 };
 
-const SHEET_COLUMNS = ["ID","Date","Time","Category","Subcategory","Title","Note","Lat","Lon","Photo-URL","Info-URL","Country"];
+const SHEET_COLUMNS = ["ID","Date","Time","Category","Subcategory","Title","Note","Lat","Lon","Photo-URL","Info-URL","Country","Temperature","Weather"];
 
 // ------------------------------------------------------------
 // doPost — neuen Punkt schreiben (Shortcut -> hier)
@@ -126,10 +126,17 @@ function doPost(e) {
         }
       }
 
+      // --- Wetter nachtragen (fuer den Erfassungszeitpunkt, nicht "jetzt") ---
+      // Blockiert nie das Speichern des Punkts - schlaegt die Abfrage fehl,
+      // bleiben Temperature/Weather einfach leer.
+      const pointDate = body.date || Utilities.formatDate(new Date(), "UTC", "yyyy-MM-dd");
+      const pointTime = body.time || Utilities.formatDate(new Date(), "UTC", "HH:mm");
+      const weather = fetchWeather(lat, lon, pointDate, pointTime);
+
       const row = [
         id,
-        body.date || Utilities.formatDate(new Date(), "UTC", "yyyy-MM-dd"),
-        body.time || Utilities.formatDate(new Date(), "UTC", "HH:mm"),
+        pointDate,
+        pointTime,
         category,
         subcategory,
         String(body.title).trim(),
@@ -139,6 +146,8 @@ function doPost(e) {
         photoUrl,
         body.infoUrl || "",
         body.country || "",
+        weather ? weather.temperature : "",
+        weather ? weather.label : "",
       ];
 
       if (existingRow > 0) {
@@ -155,6 +164,61 @@ function doPost(e) {
   } catch (err) {
     return jsonError("Serverfehler: " + err.message);
   }
+}
+
+// ------------------------------------------------------------
+// Wetter fuer Ort+Zeitpunkt nachtragen (Open-Meteo, kein API-Key noetig).
+// Nutzt die normale Forecast-API mit start_date/end_date - die deckt neben
+// der Vorschau auch ca. die letzten ~3 Monate ab (Modell-Archiv), also
+// praktisch immer den Erfassungszeitpunkt einer aktiven Reise.
+// ------------------------------------------------------------
+function fetchWeather(lat, lon, dateStr, timeStr) {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&start_date=${dateStr}&end_date=${dateStr}` +
+      `&hourly=temperature_2m,weathercode&timezone=UTC`;
+    const resp = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    if (resp.getResponseCode() !== 200) {
+      Logger.log('fetchWeather: HTTP ' + resp.getResponseCode());
+      return null;
+    }
+    const data = JSON.parse(resp.getContentText());
+    if (!data.hourly || !data.hourly.time) return null;
+
+    // Zielstunde (z.B. "14:15" -> "14:00") suchen und passenden Index finden
+    const targetHour = (timeStr || "12:00").split(":")[0].padStart(2, "0") + ":00";
+    const targetKey = dateStr + "T" + targetHour;
+    let idx = data.hourly.time.indexOf(targetKey);
+    if (idx === -1) idx = 0; // Fallback: erste verfuegbare Stunde des Tages
+
+    const temp = data.hourly.temperature_2m[idx];
+    const code = data.hourly.weathercode[idx];
+    if (temp === undefined || temp === null) return null;
+
+    return {
+      temperature: Math.round(temp * 10) / 10,
+      label: weatherCodeToLabel(code),
+    };
+  } catch (err) {
+    Logger.log('fetchWeather: FEHLER — ' + err.message);
+    return null;
+  }
+}
+
+function weatherCodeToLabel(code) {
+  const map = {
+    0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
+    45: "Fog", 48: "Rime fog",
+    51: "Light drizzle", 53: "Drizzle", 55: "Dense drizzle",
+    56: "Freezing drizzle", 57: "Freezing drizzle (dense)",
+    61: "Light rain", 63: "Rain", 65: "Heavy rain",
+    66: "Freezing rain", 67: "Freezing rain (heavy)",
+    71: "Light snow", 73: "Snow", 75: "Heavy snow", 77: "Snow grains",
+    80: "Light rain showers", 81: "Rain showers", 82: "Violent rain showers",
+    85: "Snow showers", 86: "Heavy snow showers",
+    95: "Thunderstorm", 96: "Thunderstorm with hail", 99: "Thunderstorm with heavy hail",
+  };
+  return map[code] || "";
 }
 
 function uploadPhoto(base64Data, id) {
@@ -218,6 +282,8 @@ function doGet(e) {
         photoUrl: r[idx["Photo-URL"]] || "",
         infoUrl: r[idx["Info-URL"]] || "",
         country: r[idx["Country"]] || "",
+        temperature: r[idx["Temperature"]] !== "" ? r[idx["Temperature"]] : null,
+        weather: r[idx["Weather"]] || "",
       });
     }
 

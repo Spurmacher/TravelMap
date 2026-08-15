@@ -330,8 +330,9 @@
     </div>
 
     <p class="note">
-      Data source: www.spurmacher.ch<br><br>
-      This map grows continuously with our travels around the globe and serves as a diary, memory, and information for others.
+      Datenquelle: lokaleDaten (12 Punkte).<br><br>
+      NÃchster Ausbauschritt: Sheet-Anbindung über Google Apps Script
+      (JSON-Endpoint), Marker aus Sheet statt aus <code>DATA</code>-Array laden.
     </p>
   </div>
 
@@ -500,12 +501,16 @@ DATA.forEach(pt => {
   }
 
   const infoHtml = pt.infoUrl ? `<a href="${pt.infoUrl}" target="_blank" style="color:${cfg.hex};font-size:11px;">Mehr Infos â†’</a><br>` : '';
+  const weatherHtml = (pt.temperature !== null && pt.temperature !== undefined && pt.temperature !== '')
+    ? `<div class="pop-note" style="margin-bottom:2px;">${pt.weather || ''} ${Math.round(pt.temperature)}°C</div>`
+    : '';
 
   marker.bindPopup(`
     <div class="pop-cat" style="color:${cfg.hex}">${pt.category}${subLabel}</div>
     <div class="pop-title">${pt.title}</div>
     ${photoHtml}
     <div class="pop-note">${pt.note || ''}</div>
+    ${weatherHtml}
     ${infoHtml}
     <div class="pop-meta"><span>${pt.date || ''}${pt.time ? ' · ' + pt.time : ''}</span><span>${pt.lat.toFixed(4)}, ${pt.lon.toFixed(4)}</span></div>
   `);
