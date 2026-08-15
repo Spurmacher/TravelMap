@@ -1,7 +1,6 @@
 [
-  {"file": "Tracks-20250717-20250917.gpx", "label": "Central Asia Part I",   "color": "#FF7518", "borderColor": "#12150f"},
+  {"file": "Mongolia.gpx", "label": "Central Asia 2025",   "color": "#7d36ff", "borderColor": "#00001"},
   {"file": "Tracks-20251009-20251216.gpx", "label": "Central Asia Part II",  "color": "##00fff1", "borderColor": "#12150f"},
   {"file": "Tracks-20260107-20260208.gpx", "label": "Central Asia Part III", "color": "#ff20a2", "borderColor": "#fe66ff"},
-  {"file": "Tracks-20260208-20260316.gpx", "label": "Central Asia Part IV",  "color": "#73f9ff", "borderColor": "#73f9ff"},
-  {"file": "Tracks-20260318-20260810.gpx", "label": "Central Asia Part V",   "color": "#7d36ff", "borderColor": "#7d36ff"}  
+  {"file": "Tracks-20260208-20260316.gpx", "label": "Central Asia Part IV",  "color": "#73f9ff", "borderColor": "#73f9ff"}
 ]
