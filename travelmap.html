@@ -572,7 +572,7 @@ function updateReadout(pt, cfg){
   `;
   const btn = document.getElementById('btnCopyCoords');
   btn.disabled = false;
-  btn.textContent = 'Koordinaten kopieren';
+  btn.textContent = 'Copy Coordinates';
   btn.classList.remove('copied');
 }
 
@@ -582,11 +582,11 @@ document.getElementById('btnCopyCoords').addEventListener('click', async () => {
   const btn = document.getElementById('btnCopyCoords');
   try {
     await navigator.clipboard.writeText(text);
-    btn.textContent = 'Kopiert!';
+    btn.textContent = 'Copied!';
     btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'Koordinaten kopieren'; btn.classList.remove('copied'); }, 1500);
+    setTimeout(() => { btn.textContent = 'Copy Coordinates'; btn.classList.remove('copied'); }, 1500);
   } catch (err) {
-    btn.textContent = 'Fehler beim Kopieren';
+    btn.textContent = 'Error while copying';
   }
 });
 
