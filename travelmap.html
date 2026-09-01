@@ -381,6 +381,21 @@ const SUBCATEGORIES = {
   "Social":        ["Blog Entry", "Meetup"],
 };
 
+// Emoji je Subcategory - Marker-Kreisfarbe bleibt die Category-Farbe,
+// das Symbol zeigt zusaetzlich die Subcategory. Fallback: DEFAULT_ICON.
+const DEFAULT_ICON = "📍";
+const SUBCATEGORY_ICONS = {
+  "Wild Camp": "🏕️", "Campsite": "⛺", "Parking Lot": "🅿️", "Hotel": "🏨", "Guesthouse": "🏠", "Other": "📍",
+  "Border Crossing": "🛂", "Police Checkpoint": "👮", "Military Checkpoint": "💂",
+  "Water": "💧", "Fuel": "⛽", "SIM/Internet": "📶", "Car Insurance": "📄", "Shopping": "🛒",
+  "ATM & Exchange": "💱", "Workshop": "🔧", "Spare Parts": "⚙️", "Laundry": "🧺",
+  "Road Condition": "🚧", "Safety Warning": "⚠️", "Avoid Area": "⛔", "Natural Hazard": "🌪️",
+  "Attraction": "📸", "Viewpoint": "🔭", "Hike": "🥾", "Beach": "🏖️", "Culture": "🏛️",
+  "National Park": "🌳", "Scenery": "🏞️",
+  "General Information": "ℹ️",
+  "Blog Entry": "📝", "Meetup": "🤝",
+};
+
  
 // DATA wird aus data.js geladen (siehe <script src="data.js"> weiter unten).
 // data.js wird von sync-map.ps1 automatisch aus dem Google Sheet erzeugt und
@@ -418,18 +433,20 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_M
 
 // Esri World Street Map	Strassenkarten-Look, ähnlich Google-Maps-Optik
 
-function makeIcon(hex){
+function makeIcon(hex, icon){
   return L.divIcon({
     className: '',
     html: `<div style="
-      width:14px;height:14px;border-radius:50%;
+      width:26px;height:26px;border-radius:50%;
       background:${hex};
       border:2px solid #12150f;
       box-shadow:0 0 0 1px ${hex}88;
-    "></div>`,
-    iconSize:[14,14],
-    iconAnchor:[7,7],
-    popupAnchor:[0,-7],
+      display:flex;align-items:center;justify-content:center;
+      font-size:13px;line-height:1;
+    ">${icon || DEFAULT_ICON}</div>`,
+    iconSize:[26,26],
+    iconAnchor:[13,13],
+    popupAnchor:[0,-13],
   });
 }
 
@@ -478,7 +495,7 @@ DATA.forEach(pt => {
     if (!layerGroups[key]) { layerGroups[key] = L.layerGroup(); markersByKey[key] = []; }
   }
 
-  const marker = L.marker([pt.lat, pt.lon], { icon: makeIcon(cfg.hex) });
+  const marker = L.marker([pt.lat, pt.lon], { icon: makeIcon(cfg.hex, SUBCATEGORY_ICONS[pt.subcategory]) });
   const subLabel = pt.subcategory ? ` · ${pt.subcategory}` : '';
 
   // photoUrl kann mehrere, durch " | " getrennte URLs enthalten (mehrere Fotos pro Punkt)
