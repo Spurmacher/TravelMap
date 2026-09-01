@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   TRAVELMAP - woechentlicher Sync: holt Daten aus dem Google Sheet
   (via Apps Script Endpoint) und pusht sie als data.js ins GitHub-Repo.
@@ -16,7 +16,7 @@ param(
 # ------------------------------------------------------------
 # CONFIG - hier anpassen
 # ------------------------------------------------------------
-$EndpointUrl = "https://script.google.com/macros/s/AKfycbyTj5QrM4I6uv67TB-_HO8rVoNd8vO7oFJysZI1FmOTFSXkKCRZxJA2f7VYN9YT10VAIQ/exec";
+$EndpointUrl = "https://script.google.com/macros/s/AKfycbzuP1vAxvmTL9gvkiH5ADeCe3hqYm8xEMobwQ6IJHrUZLuC6Iei455A-htKUnB45FXhGw/exec";
 $RepoPath    = "C:\Daten WORK\Reisen\Frieda_WorldTour\Media\InteractiveMap\TravelMap"   # lokaler Git-Klon des Karten-Repos
 $DataFile    = Join-Path $RepoPath "data.js"
 $LogPath     = "C:\Daten WORK\Reisen\Frieda_WorldTour\Media\InteractiveMap\"

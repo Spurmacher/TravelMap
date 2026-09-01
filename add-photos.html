@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -70,7 +70,7 @@
 <body>
 
 <h1>ADD PHOTOS</h1>
-<div class="sub">Spurmacher Travelmap · Fotos nachtragen</div>
+<div class="sub">Spurmacher Travelmap Â· Fotos nachtragen</div>
 
 <label>Punkt suchen</label>
 <input type="text" id="search" placeholder="Titel oder Ort eingeben...">
@@ -86,7 +86,7 @@
   <div id="photoPreviewList" class="photo-preview-list"></div>
   <div class="hint" id="photoHint"></div>
 
-  <button class="btn primary" id="btnUpload" type="button" style="margin-top:16px;">Fotos hinzufügen</button>
+  <button class="btn primary" id="btnUpload" type="button" style="margin-top:16px;">Fotos hinzufÃ¼gen</button>
 </div>
 
 <div class="status" id="status"></div>
@@ -95,7 +95,7 @@
 // ==============================================================
 // CONFIG - dieselbe URL/Secret wie in capture.html
 // ==============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/DEINE_SCRIPT_ID/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuP1vAxvmTL9gvkiH5ADeCe3hqYm8xEMobwQ6IJHrUZLuC6Iei455A-htKUnB45FXhGw/exec";
 const WRITE_SECRET = "FuerMeinSchutz:#!";
 const MAX_PHOTO_WIDTH = 1600;
 const JPEG_QUALITY = 0.7;
@@ -140,7 +140,7 @@ function renderList(points) {
     row.innerHTML = `
       <div>
         <div class="point-title">${pt.title}</div>
-        <div class="point-meta">${pt.date || ''} ${pt.time || ''} · ${pt.category}${pt.subcategory ? ' · ' + pt.subcategory : ''}</div>
+        <div class="point-meta">${pt.date || ''} ${pt.time || ''} Â· ${pt.category}${pt.subcategory ? ' Â· ' + pt.subcategory : ''}</div>
       </div>
       <div class="photo-count">${count}/${MAX_PHOTOS_TOTAL}</div>
     `;
@@ -169,7 +169,7 @@ function selectPoint(pt, rowEl) {
   const count = photoCountOf(pt);
   document.getElementById('selTitle').textContent = pt.title;
   document.getElementById('selMeta').textContent =
-    `${pt.date || ''} ${pt.time || ''} · aktuell ${count}/${MAX_PHOTOS_TOTAL} Fotos · noch ${MAX_PHOTOS_TOTAL - count} Platz`;
+    `${pt.date || ''} ${pt.time || ''} Â· aktuell ${count}/${MAX_PHOTOS_TOTAL} Fotos Â· noch ${MAX_PHOTOS_TOTAL - count} Platz`;
   document.getElementById('selectedBox').classList.add('show');
   document.getElementById('status').style.display = 'none';
 }
@@ -228,8 +228,8 @@ document.getElementById('photo').addEventListener('change', async (e) => {
 });
 
 document.getElementById('btnUpload').addEventListener('click', async () => {
-  if (!selectedPoint) { showStatus('err', 'Kein Punkt ausgewählt.'); return; }
-  if (photosBase64.length === 0) { showStatus('err', 'Keine Fotos ausgewählt.'); return; }
+  if (!selectedPoint) { showStatus('err', 'Kein Punkt ausgewÃ¤hlt.'); return; }
+  if (photosBase64.length === 0) { showStatus('err', 'Keine Fotos ausgewÃ¤hlt.'); return; }
 
   showStatus('info', 'Lade hoch...');
   try {
@@ -245,7 +245,7 @@ document.getElementById('btnUpload').addEventListener('click', async () => {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Unbekannter Fehler');
 
-    showStatus(data.warning ? 'err' : 'ok', data.warning || `${data.addedCount} Foto(s) hinzugefügt (${data.totalCount}/${MAX_PHOTOS_TOTAL} total).`);
+    showStatus(data.warning ? 'err' : 'ok', data.warning || `${data.addedCount} Foto(s) hinzugefÃ¼gt (${data.totalCount}/${MAX_PHOTOS_TOTAL} total).`);
 
     await loadPoints();
     document.getElementById('photo').value = '';

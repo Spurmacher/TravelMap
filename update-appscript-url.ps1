@@ -72,7 +72,7 @@ if (-not (Test-Path $RepoPath)) {
 $pattern = 'https://script\.google\.com/macros/s/[A-Za-z0-9_-]+/exec'
 
 # --- Relevante Dateitypen durchsuchen (rekursiv im Repo-Ordner) ---
-$files = Get-ChildItem -Path $RepoPath -Recurse -Include *.html, *.ps1 -File
+$files = Get-ChildItem -Path $RepoPath -Recurse -Include *.html, *.ps1 -File -Exclude update-appscript-url.ps1
 
 $changedCount = 0
 
