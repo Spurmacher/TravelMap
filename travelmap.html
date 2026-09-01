@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TRAVELMAP</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -381,19 +382,19 @@ const SUBCATEGORIES = {
   "Social":        ["Blog Entry", "Meetup"],
 };
 
-// Emoji je Subcategory - Marker-Kreisfarbe bleibt die Category-Farbe,
-// das Symbol zeigt zusaetzlich die Subcategory. Fallback: DEFAULT_ICON.
-const DEFAULT_ICON = "📍";
+// Tabler-Icon-Name je Subcategory (ohne "ti-"-Praefix, wird beim Rendern ergaenzt).
+// Marker-Kreisfarbe bleibt die Category-Farbe. Fallback: DEFAULT_ICON.
+const DEFAULT_ICON = "map-pin";
 const SUBCATEGORY_ICONS = {
-  "Wild Camp": "🏕️", "Campsite": "⛺", "Parking Lot": "🅿️", "Hotel": "🏨", "Guesthouse": "🏠", "Other": "📍",
-  "Border Crossing": "🛂", "Police Checkpoint": "👮", "Military Checkpoint": "💂",
-  "Water": "💧", "Fuel": "⛽", "SIM/Internet": "📶", "Car Insurance": "📄", "Shopping": "🛒",
-  "ATM & Exchange": "💱", "Workshop": "🔧", "Spare Parts": "⚙️", "Laundry": "🧺",
-  "Road Condition": "🚧", "Safety Warning": "⚠️", "Avoid Area": "⛔", "Natural Hazard": "🌪️",
-  "Attraction": "📸", "Viewpoint": "🔭", "Hike": "🥾", "Beach": "🏖️", "Culture": "🏛️",
-  "National Park": "🌳", "Scenery": "🏞️",
-  "General Information": "ℹ️",
-  "Blog Entry": "📝", "Meetup": "🤝",
+  "Wild Camp": "tent", "Campsite": "campfire", "Parking Lot": "parking", "Hotel": "building", "Guesthouse": "home", "Other": "map-pin",
+  "Border Crossing": "flag", "Police Checkpoint": "shield", "Military Checkpoint": "shield-lock",
+  "Water": "droplet", "Fuel": "gas-station", "SIM/Internet": "wifi", "Car Insurance": "file-text", "Shopping": "shopping-cart",
+  "ATM & Exchange": "cash-banknote", "Workshop": "tool", "Spare Parts": "settings", "Laundry": "wash",
+  "Road Condition": "road", "Safety Warning": "alert-triangle", "Avoid Area": "ban", "Natural Hazard": "wind",
+  "Attraction": "camera", "Viewpoint": "binoculars", "Hike": "mountain", "Beach": "umbrella",
+  "Culture": "landmark", "National Park": "trees", "Scenery": "photo",
+  "General Information": "info-circle",
+  "Blog Entry": "notes", "Meetup": "users",
 };
 
  
@@ -442,8 +443,7 @@ function makeIcon(hex, icon){
       border:2px solid #12150f;
       box-shadow:0 0 0 1px ${hex}88;
       display:flex;align-items:center;justify-content:center;
-      font-size:13px;line-height:1;
-    ">${icon || DEFAULT_ICON}</div>`,
+    "><i class="ti ti-${icon || DEFAULT_ICON}" style="font-size:14px;color:#12150f;"></i></div>`,
     iconSize:[26,26],
     iconAnchor:[13,13],
     popupAnchor:[0,-13],
