@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Add Photos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#12150f; --bg-1:#191d13; --bg-2:#20251a; --line:#2f3626;
+    --sand:#cbb389; --text:#e8e3d3; --text-mute:#8b8b78;
+    --lcd:#9ecb6a; --ok:#7fae5c; --err:#c1462f;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; background:var(--bg-0); color:var(--text);
+    font-family:'Inter',sans-serif; padding:16px 16px 40px;
+    min-height:100vh;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif; font-size:16px;
+    letter-spacing:0.06em; color:var(--sand); margin:4px 0 2px;
+  }
+  .sub{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mute); margin-bottom:18px;}
+  label{
+    display:block; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
+    color:var(--text-mute); margin:16px 0 6px;
+  }
+  input[type=text]{
+    width:100%; background:var(--bg-1); border:1px solid var(--line); color:var(--text);
+    border-radius:6px; padding:11px 12px; font-size:15px; font-family:'Inter',sans-serif;
+  }
+  .btn{
+    width:100%; padding:13px; border-radius:6px; border:1px solid var(--line);
+    background:var(--bg-2); color:var(--text); font-size:14px; font-weight:600;
+    font-family:'Space Grotesk',sans-serif; letter-spacing:0.03em; margin-top:8px;
+  }
+  .btn.primary{background:var(--sand); color:#12150f; border-color:var(--sand);}
+  .point-list{ margin-top:10px; max-height:340px; overflow-y:auto; border:1px solid var(--line); border-radius:6px; }
+  .point-row{
+    padding:10px 12px; border-bottom:1px solid var(--line); cursor:pointer;
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+  }
+  .point-row:last-child{border-bottom:none;}
+  .point-row:hover{background:var(--bg-2);}
+  .point-row.selected{background:var(--bg-2); border-left:3px solid var(--sand);}
+  .point-title{font-size:13px;}
+  .point-meta{font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mute);}
+  .photo-count{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--lcd); flex:none;}
+  .selected-box{
+    margin-top:16px; padding:12px 14px; border-radius:6px;
+    background:var(--bg-1); border:1px solid var(--line); display:none;
+  }
+  .selected-box.show{display:block;}
+  .selected-box .stitle{font-family:'Space Grotesk',sans-serif; font-weight:600; margin-bottom:4px;}
+  .selected-box .smeta{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mute);}
+  .photo-preview-list{ display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+  .photo-preview-list img{ width:60px; height:60px; object-fit:cover; border-radius:6px; border:1px solid var(--line); }
+  .hint{font-size:11px; color:var(--text-mute); margin-top:4px; line-height:1.4;}
+  .status{
+    margin-top:16px; padding:11px 12px; border-radius:6px; font-size:13px;
+    font-family:'JetBrains Mono',monospace; display:none;
+  }
+  .status.ok{background:#1c2a16; border:1px solid var(--ok); color:var(--ok); display:block;}
+  .status.err{background:#2a1a16; border:1px solid var(--err); color:#e08a72; display:block;}
+  .status.info{background:var(--bg-1); border:1px solid var(--line); color:var(--text-mute); display:block;}
+</style>
+</head>
+<body>
+
+<h1>ADD PHOTOS</h1>
+<div class="sub">Spurmacher Travelmap · Fotos nachtragen</div>
+
+<label>Punkt suchen</label>
+<input type="text" id="search" placeholder="Titel oder Ort eingeben...">
+
+<div class="point-list" id="pointList"></div>
+
+<div class="selected-box" id="selectedBox">
+  <div class="stitle" id="selTitle"></div>
+  <div class="smeta" id="selMeta"></div>
+
+  <label>Neue Photos</label>
+  <input type="file" id="photo" accept="image/*" multiple>
+  <div id="photoPreviewList" class="photo-preview-list"></div>
+  <div class="hint" id="photoHint"></div>
+
+  <button class="btn primary" id="btnUpload" type="button" style="margin-top:16px;">Fotos hinzufügen</button>
+</div>
+
+<div class="status" id="status"></div>
+
+<script>
+// ==============================================================
+// CONFIG - dieselbe URL/Secret wie in capture.html
+// ==============================================================
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/DEINE_SCRIPT_ID/exec";
+const WRITE_SECRET = "FuerMeinSchutz:#!";
+const MAX_PHOTO_WIDTH = 1600;
+const JPEG_QUALITY = 0.7;
+const MAX_PHOTOS_TOTAL = 5;
+
+let allPoints = [];
+let selectedPoint = null;
+let photosBase64 = [];
+
+function showStatus(type, msg) {
+  const el = document.getElementById('status');
+  el.className = "status " + type;
+  el.textContent = msg;
+}
+
+// --- Punkte laden ---
+async function loadPoints() {
+  showStatus('info', 'Lade Punkte...');
+  try {
+    const res = await fetch(APPS_SCRIPT_URL);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "Fehler beim Laden.");
+    allPoints = data.points.slice().sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
+    renderList(allPoints);
+    document.getElementById('status').style.display = 'none';
+  } catch (err) {
+    showStatus('err', 'Laden fehlgeschlagen: ' + err.message);
+  }
+}
+
+function photoCountOf(pt) {
+  return (pt.photoUrl || '').split('|').map(s => s.trim()).filter(Boolean).length;
+}
+
+function renderList(points) {
+  const list = document.getElementById('pointList');
+  list.innerHTML = '';
+  points.slice(0, 100).forEach(pt => {
+    const row = document.createElement('div');
+    row.className = 'point-row';
+    const count = photoCountOf(pt);
+    row.innerHTML = `
+      <div>
+        <div class="point-title">${pt.title}</div>
+        <div class="point-meta">${pt.date || ''} ${pt.time || ''} · ${pt.category}${pt.subcategory ? ' · ' + pt.subcategory : ''}</div>
+      </div>
+      <div class="photo-count">${count}/${MAX_PHOTOS_TOTAL}</div>
+    `;
+    row.addEventListener('click', () => selectPoint(pt, row));
+    list.appendChild(row);
+  });
+}
+
+document.getElementById('search').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  const filtered = q
+    ? allPoints.filter(pt => (pt.title + ' ' + (pt.country || '')).toLowerCase().includes(q))
+    : allPoints;
+  renderList(filtered);
+});
+
+function selectPoint(pt, rowEl) {
+  document.querySelectorAll('.point-row').forEach(r => r.classList.remove('selected'));
+  if (rowEl) rowEl.classList.add('selected');
+  selectedPoint = pt;
+  photosBase64 = [];
+  document.getElementById('photoPreviewList').innerHTML = '';
+  document.getElementById('photoHint').textContent = '';
+  document.getElementById('photo').value = '';
+
+  const count = photoCountOf(pt);
+  document.getElementById('selTitle').textContent = pt.title;
+  document.getElementById('selMeta').textContent =
+    `${pt.date || ''} ${pt.time || ''} · aktuell ${count}/${MAX_PHOTOS_TOTAL} Fotos · noch ${MAX_PHOTOS_TOTAL - count} Platz`;
+  document.getElementById('selectedBox').classList.add('show');
+  document.getElementById('status').style.display = 'none';
+}
+
+// --- Foto-Kompression (identisch zu capture.html) ---
+function compressImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > MAX_PHOTO_WIDTH) {
+          h = Math.round(h * (MAX_PHOTO_WIDTH / w));
+          w = MAX_PHOTO_WIDTH;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
+      };
+      img.onerror = reject;
+      img.src = ev.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('photo').addEventListener('change', async (e) => {
+  const hint = document.getElementById('photoHint');
+  const previewList = document.getElementById('photoPreviewList');
+  let files = Array.from(e.target.files || []);
+  if (files.length === 0) { photosBase64 = []; previewList.innerHTML = ''; return; }
+
+  const freeSlots = selectedPoint ? (MAX_PHOTOS_TOTAL - photoCountOf(selectedPoint)) : MAX_PHOTOS_TOTAL;
+  let extraNote = '';
+  if (files.length > freeSlots) {
+    extraNote = ` (nur ${freeSlots} Platz frei, Rest ignoriert)`;
+    files = files.slice(0, freeSlots);
+  }
+
+  photosBase64 = [];
+  previewList.innerHTML = '';
+  for (let i = 0; i < files.length; i++) {
+    hint.textContent = `Komprimiere ${i + 1}/${files.length}...`;
+    try {
+      const b64 = await compressImageFile(files[i]);
+      photosBase64.push(b64);
+      const img = document.createElement('img');
+      img.src = b64;
+      previewList.appendChild(img);
+    } catch (err) { console.warn(err); }
+  }
+  hint.textContent = `${photosBase64.length} Foto(s) bereit${extraNote}`;
+});
+
+document.getElementById('btnUpload').addEventListener('click', async () => {
+  if (!selectedPoint) { showStatus('err', 'Kein Punkt ausgewählt.'); return; }
+  if (photosBase64.length === 0) { showStatus('err', 'Keine Fotos ausgewählt.'); return; }
+
+  showStatus('info', 'Lade hoch...');
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        secret: WRITE_SECRET,
+        action: 'addPhotos',
+        id: selectedPoint.id,
+        photosBase64: photosBase64,
+      }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Unbekannter Fehler');
+
+    showStatus(data.warning ? 'err' : 'ok', data.warning || `${data.addedCount} Foto(s) hinzugefügt (${data.totalCount}/${MAX_PHOTOS_TOTAL} total).`);
+
+    await loadPoints();
+    document.getElementById('photo').value = '';
+    document.getElementById('photoPreviewList').innerHTML = '';
+    photosBase64 = [];
+  } catch (err) {
+    showStatus('err', 'Fehler: ' + err.message);
+  }
+});
+
+loadPoints();
+</script>
+</body>
+</html>

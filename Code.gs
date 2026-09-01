@@ -26,7 +26,7 @@ const CONFIG = {
 };
 
 const ALLOWED_CATEGORIES = {
-  "Accommodation": ["Wild Camp", "Campsite", "Parking Lot", "Hotel", "Guesthouse", "Other"],
+  "Accommodation": ["Wild Camp", "Campsite", "Parking Log", "Hotel", "Guesthouse", "Other"],
   "Checkpoints":   ["Border Crossing", "Police Checkpoint", "Military Checkpoint"],
   "Logistics":     ["Water", "Fuel", "SIM/Internet", "Car Insurance", "Shopping", "ATM & Exchange", "Workshop", "Spare Parts", "Laundry" ],
   "Danger":        ["Road Condition", "Safety Warning", "Avoid Area", "Natural Hazard", ],
@@ -52,6 +52,12 @@ function doPost(e) {
     // --- Zugriffsschutz ---
     if (body.secret !== CONFIG.WRITE_SECRET) {
       return jsonError("Ungültiges Secret.");
+    }
+
+    // --- Sonderfall: Fotos zu einem BESTEHENDEN Punkt nachtragen ---
+    // Komplett eigener Pfad, umgeht die normale Punkt-Validierung/-Erstellung.
+    if (body.action === "addPhotos") {
+      return addPhotosToPoint(body);
     }
 
     // --- Pflichtfelder prüfen ---
@@ -219,6 +225,79 @@ function weatherCodeToLabel(code) {
     95: "Thunderstorm", 96: "Thunderstorm with hail", 99: "Thunderstorm with heavy hail",
   };
   return map[code] || "";
+}
+
+// ------------------------------------------------------------
+// Fotos zu einem bestehenden Punkt hinzufuegen (add-photos.html -> hier).
+// Ueberschreibt NUR die Photo-URL-Zelle, laesst alle anderen Felder unberuehrt.
+// ------------------------------------------------------------
+function addPhotosToPoint(body) {
+  if (!body.id) return jsonError("Keine ID angegeben.");
+
+  let newPhotos = [];
+  if (Array.isArray(body.photosBase64) && body.photosBase64.length) {
+    newPhotos = body.photosBase64;
+  } else if (body.photoBase64) {
+    newPhotos = [body.photoBase64];
+  }
+  if (newPhotos.length === 0) return jsonError("Keine Fotos übermittelt.");
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_NAME);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+
+  try {
+    const values = sheet.getDataRange().getValues();
+    const header = values[0];
+    const idCol = header.indexOf("ID");
+    const photoCol = header.indexOf("Photo-URL");
+    if (idCol === -1 || photoCol === -1) return jsonError("Sheet-Header unvollständig (ID/Photo-URL fehlt).");
+
+    let rowIndex = -1;
+    for (let i = 1; i < values.length; i++) {
+      if (String(values[i][idCol]) === String(body.id)) { rowIndex = i + 1; break; }
+    }
+    if (rowIndex === -1) return jsonError(`Punkt mit ID "${body.id}" nicht gefunden.`);
+
+    const existingUrls = String(values[rowIndex - 1][photoCol] || "")
+      .split("|").map(s => s.trim()).filter(Boolean);
+
+    const freeSlots = CONFIG.MAX_PHOTO_COUNT - existingUrls.length;
+    if (freeSlots <= 0) {
+      return jsonError(`Dieser Punkt hat bereits das Maximum von ${CONFIG.MAX_PHOTO_COUNT} Fotos.`);
+    }
+
+    const toUpload = newPhotos.slice(0, freeSlots);
+    const skippedForLimit = newPhotos.length - toUpload.length;
+
+    const uploaded = [];
+    let failCount = 0;
+    toUpload.forEach((b64, i) => {
+      const url = uploadPhoto(b64, body.id + "_extra" + Date.now() + "_" + i);
+      if (url) { uploaded.push(url); } else { failCount++; }
+    });
+
+    const allUrls = existingUrls.concat(uploaded);
+    sheet.getRange(rowIndex, photoCol + 1).setValue(allUrls.join(" | "));
+
+    let warning = "";
+    if (skippedForLimit > 0) {
+      warning += `${skippedForLimit} Foto(s) nicht hochgeladen (Maximum ${CONFIG.MAX_PHOTO_COUNT} erreicht). `;
+    }
+    if (failCount > 0) {
+      warning += `${failCount} Foto(s) fehlgeschlagen (zu gross oder Fehler).`;
+    }
+
+    return jsonOk({
+      id: body.id,
+      action: "photos_added",
+      addedCount: uploaded.length,
+      totalCount: allUrls.length,
+      warning: warning || undefined,
+    });
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function uploadPhoto(base64Data, id) {
