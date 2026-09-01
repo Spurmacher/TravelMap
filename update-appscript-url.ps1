@@ -7,6 +7,43 @@
 .USAGE
   .\update-appscript-url.ps1 -NewUrl "https://script.google.com/macros/s/DEINE_NEUE_ID/exec"
   .\update-appscript-url.ps1 -NewUrl "..." -DryRun    (nur anzeigen, nichts schreiben)
+
+
+.DESCRIPTION
+  Ersetzt die alte Apps-Script-Web-App-URL durch eine neue, in allen
+  Dateien im Repo-Ordner (html, ps1), unabhaengig davon, welche alte
+  URL dort aktuell steht.
+
+.PARAMETER NewUrl
+    Neue URL von code.cs
+
+.PARAMETER RepoPath
+    Fixer Wert
+
+.PARAMETER DryRun
+    Testlauf
+
+.EXAMPLE
+    PS> .\MeinSkript.ps1 -Name "Test"
+    Beschreibung, was dieses Beispiel macht.
+
+.EXAMPLE
+    .\update-appscript-url.ps1 -NewUrl "https://script.google.com/macros/s/AKfycbyTj5QrM4I6uv67TB-_HO8rVoNd8vO7oFJysZI1FmOTFSXkKCRZxJA2f7VYN9YT10VAIQ/exec" -DryRun
+
+.INPUTS
+    Keine 
+
+.OUTPUTS
+    Keine 
+
+.NOTES
+    Autor:   Peter
+
+
+.LINK
+    n/a
+
+
 #>
 
 param(
