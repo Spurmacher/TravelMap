@@ -188,6 +188,17 @@
   }
   .readout .rval .dim{color:var(--lcd-dim);}
 
+  .btn{
+    padding:8px 10px; border-radius:6px; border:1px solid var(--line);
+    background:var(--bg-2); color:var(--text); font-size:11px; font-weight:600;
+    font-family:'Space Grotesk',sans-serif; letter-spacing:0.03em;
+    cursor:pointer;
+  }
+  .btn:hover{border-color:var(--sand-dim);}
+  .btn:disabled{opacity:0.4; cursor:default;}
+  .btn.small{padding:7px 8px; font-size:11px;}
+  .btn.copied{background:var(--ok); color:#12150f; border-color:var(--ok);}
+
   .note{
     margin:14px 18px 0;
     font-size:11px;
@@ -328,6 +339,7 @@
         LON <span class="dim"> </span><br>
         DAT <span class="dim"> </span>
       </div>
+      <button class="btn small" id="btnCopyCoords" type="button" style="margin-top:8px;width:100%;" disabled>Koordinaten kopieren</button>
     </div>
 
     <p class="note">
@@ -548,13 +560,35 @@ function updatePointCount(){
   document.getElementById('pointCount').textContent = n;
 }
 
+let lastLat = null, lastLon = null;
+
 function updateReadout(pt, cfg){
+  lastLat = pt.lat;
+  lastLon = pt.lon;
   document.getElementById('coordReadout').innerHTML = `
     LAT <span style="color:${cfg.hex}">${pt.lat.toFixed(4)}</span><br>
     LON <span style="color:${cfg.hex}">${pt.lon.toFixed(4)}</span><br>
     DAT <span class="dim">${pt.date || '—'}${pt.time ? ' · ' + pt.time : ''}</span>
   `;
+  const btn = document.getElementById('btnCopyCoords');
+  btn.disabled = false;
+  btn.textContent = 'Koordinaten kopieren';
+  btn.classList.remove('copied');
 }
+
+document.getElementById('btnCopyCoords').addEventListener('click', async () => {
+  if (lastLat === null || lastLon === null) return;
+  const text = `${lastLat.toFixed(6)}, ${lastLon.toFixed(6)}`;
+  const btn = document.getElementById('btnCopyCoords');
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = 'Kopiert!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Koordinaten kopieren'; btn.classList.remove('copied'); }, 1500);
+  } catch (err) {
+    btn.textContent = 'Fehler beim Kopieren';
+  }
+});
 
 // ---------------------------------------------------------------
 // Sidebar: Category-Zeilen mit aufklappbaren Subcategory-Listen
