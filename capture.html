@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -76,7 +76,7 @@
 <body>
 
 <h1>ADD TRAVEL POINT</h1>
-<div class="sub">Spurmacher Travelmap Â· Erfassung</div>
+<div class="sub">Spurmacher Travelmap - Erfassung</div>
 
 <label>Category</label>
 <select id="category"></select>
@@ -108,7 +108,7 @@
 
 <label>Location</label>
 <button class="btn" id="btnLocation" type="button"> Standort erfassen</button>
-<div class="loc-readout" id="locReadout">LAT Â· LON </div>
+<div class="loc-readout" id="locReadout">LAT - LON </div>
 
 <button class="btn primary" id="btnSubmit" type="button" style="margin-top:22px;">Speichern</button>
 <div class="status" id="status"></div>
@@ -120,7 +120,7 @@
 
 <script>
 // ==============================================================
-// CONFIG vor dem Hosten ausfÃ¼llen
+// CONFIG vor dem Hosten ausfuellen
 // ==============================================================
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuP1vAxvmTL9gvkiH5ADeCe3hqYm8xEMobwQ6IJHrUZLuC6Iei455A-htKUnB45FXhGw/exec";
 const WRITE_SECRET = "FuerMeinSchutz:#!";
@@ -180,17 +180,17 @@ document.getElementById('btnLocation').addEventListener('click', () => {
   const readout = document.getElementById('locReadout');
   readout.textContent = "Ermittle Standort";
   if (!navigator.geolocation) {
-    readout.textContent = "Geolocation nicht verfÃ¼gbar auf diesem GerÃ¤t/Browser.";
+    readout.textContent = "Geolocation nicht verfuegbar auf diesem Geraet/Browser.";
     return;
   }
   navigator.geolocation.getCurrentPosition(
     pos => {
       currentLat = pos.coords.latitude;
       currentLon = pos.coords.longitude;
-      readout.textContent = `LAT ${currentLat.toFixed(5)} Â· LON ${currentLon.toFixed(5)} (${Math.round(pos.coords.accuracy)}m)`;
+      readout.textContent = `LAT ${currentLat.toFixed(5)} - LON ${currentLon.toFixed(5)} (${Math.round(pos.coords.accuracy)}m)`;
     },
     err => {
-      readout.textContent = "Standort fehlgeschlagen: " + err.message + ", bitte GPS/Ortungsdienste prÃ¼fen.";
+      readout.textContent = "Standort fehlgeschlagen: " + err.message + ", bitte GPS/Ortungsdienste pruefen.";
     },
     { enableHighAccuracy: true, timeout: 15000 }
   );
@@ -303,7 +303,7 @@ function buildPayload() {
 async function sendPoint(payload) {
   // Immer das aktuell im Code hinterlegte Secret verwenden, nicht das im
   // Warteschlangen-Eintrag gespeicherte (kann veraltet sein, falls sich
-  // WRITE_SECRET seit dem Anlegen des Eintrags geÃ¤ndert hat).
+  // WRITE_SECRET seit dem Anlegen des Eintrags geaendert hat).
   const payloadToSend = { ...payload, secret: WRITE_SECRET };
   const res = await fetch(APPS_SCRIPT_URL, {
     method: "POST",
