@@ -7,7 +7,7 @@
  *
  * SETUP (einmalig):
  *  1. Neues Google Sheet anlegen, Kopfzeile in Zeile 1 exakt so:
- *     ID | Date | Time | Category | Subcategory | Title | Note | Lat | Lon | Photo-URL | Info-URL | Country | Temperature | Weather
+ *     ID | Date | Time | Category | Subcategory | Title | Note | Lat | Lon | Photo-URL | Info-URL | Country | Temperature | Weather | EndDate
  *  2. Erweiterungen -> Apps Script -> diesen Code einfügen
  *  3. CONFIG unten ausfüllen (Ordner-ID für Fotos, eigenes Secret setzen)
  *  4. Bereitstellen -> Neue Bereitstellung -> Web-App
@@ -36,7 +36,7 @@ const ALLOWED_CATEGORIES = {
   "Social":        ["Blog Entry", "Meetup"],
 };
 
-const SHEET_COLUMNS = ["ID","Date","Time","Category","Subcategory","Title","Note","Lat","Lon","Photo-URL","Info-URL","Country","Temperature","Weather"];
+const SHEET_COLUMNS = ["ID","Date","Time","Category","Subcategory","Title","Note","Lat","Lon","Photo-URL","Info-URL","Country","Temperature","Weather","EndDate"];
 
 // ------------------------------------------------------------
 // doPost — neuen Punkt schreiben (Shortcut -> hier)
@@ -154,6 +154,7 @@ function doPost(e) {
         body.country || "",
         weather ? weather.temperature : "",
         weather ? weather.label : "",
+        body.endDate || "",
       ];
 
       if (existingRow > 0) {
@@ -363,6 +364,7 @@ function doGet(e) {
         country: r[idx["Country"]] || "",
         temperature: r[idx["Temperature"]] !== "" ? r[idx["Temperature"]] : null,
         weather: r[idx["Weather"]] || "",
+        endDate: formatDateValue(r[idx["EndDate"]]),
       });
     }
 

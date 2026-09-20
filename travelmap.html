@@ -496,6 +496,23 @@ function wireGallery(e){
   updateCounter();
 }
 
+// Anzahl Tage zwischen Date und EndDate (beide als "yyyy-MM-dd"), fuer die
+// Anzeige "wie lange war man an diesem Punkt".
+function daysBetween(dateStr, endDateStr){
+  if (!dateStr || !endDateStr) return null;
+  const d1 = new Date(dateStr + "T00:00:00Z");
+  const d2 = new Date(endDateStr + "T00:00:00Z");
+  const diff = Math.round((d2 - d1) / 86400000);
+  return isNaN(diff) ? null : diff;
+}
+
+function endDateHtml(pt){
+  if (!pt.endDate) return '';
+  const days = daysBetween(pt.date, pt.endDate);
+  const daysLabel = (days !== null && days >= 0) ? ` (${days} ${days === 1 ? 'Tag' : 'Tage'})` : '';
+  return `<br>bis ${pt.endDate}${daysLabel}`;
+}
+
 DATA.forEach(pt => {
   const cfg = CATEGORIES[pt.category];
   if (!cfg) { console.warn('Unbekannte Category, übersprungen:', pt.category, pt); return; }
@@ -541,7 +558,7 @@ DATA.forEach(pt => {
     <div class="pop-note">${pt.note || ''}</div>
     ${weatherHtml}
     ${infoHtml}
-    <div class="pop-meta"><span>${pt.date || ''}${pt.time ? ' · ' + pt.time : ''}</span><span>${pt.lat.toFixed(4)}, ${pt.lon.toFixed(4)}</span></div>
+    <div class="pop-meta"><span>${pt.date || ''}${pt.time ? ' · ' + pt.time : ''}${endDateHtml(pt)}</span><span>${pt.lat.toFixed(4)}, ${pt.lon.toFixed(4)}</span></div>
   `);
   if (photos.length > 1) {
     marker.on('popupopen', wireGallery);
@@ -569,7 +586,7 @@ function updateReadout(pt, cfg){
   document.getElementById('coordReadout').innerHTML = `
     LAT <span style="color:${cfg.hex}">${pt.lat.toFixed(4)}</span><br>
     LON <span style="color:${cfg.hex}">${pt.lon.toFixed(4)}</span><br>
-    DAT <span class="dim">${pt.date || '—'}${pt.time ? ' · ' + pt.time : ''}</span>
+    DAT <span class="dim">${pt.date || '—'}${pt.time ? ' · ' + pt.time : ''}${endDateHtml(pt)}</span>
   `;
   const btn = document.getElementById('btnCopyCoords');
   btn.disabled = false;

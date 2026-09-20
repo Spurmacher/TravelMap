@@ -27,7 +27,7 @@
     display:block; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
     color:var(--text-mute); margin:16px 0 6px;
   }
-  select, input[type=text], textarea{
+  select, input[type=text], input[type=date], textarea{
     width:100%; background:var(--bg-1); border:1px solid var(--line); color:var(--text);
     border-radius:6px; padding:11px 12px; font-size:15px; font-family:'Inter',sans-serif;
   }
@@ -101,6 +101,9 @@
   </div>
 </div>
 
+<label>Bis <span style="text-transform:none;color:var(--text-mute);">(optional, ohne Zeit)</span></label>
+<input type="date" id="endDate">
+
 <label>Photos <span style="text-transform:none;color:var(--text-mute);">(max. 5)</span></label>
 <input type="file" id="photo" accept="image/*" multiple>
 <div id="photoPreviewList" class="photo-preview-list"></div>
@@ -122,7 +125,7 @@
 // ==============================================================
 // CONFIG vor dem Hosten ausfuellen
 // ==============================================================
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzk4kmCXBdXP_Bt6d-oIZmeoM46gKHHkPnUCMax4B7KbxC-siZaTVD7Ttkfu9ZKyp4JiQ/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzavv1FmdLurTGD48Cg4fT50h8SCTx1u8jyoJ6xKOBv-X6LPq73cVTMS-f5vq7_DSqxjg/exec";
 const WRITE_SECRET = "FuerMeinSchutz:#!";
 const MAX_PHOTO_WIDTH = 1600;
 const JPEG_QUALITY = 0.7;
@@ -296,6 +299,7 @@ function buildPayload() {
     photosBase64: photosBase64,
     infoUrl: document.getElementById('infoUrl').value.trim(),
     country: document.getElementById('country').value.trim(),
+    endDate: document.getElementById('endDate').value.trim(),
   };
 }
 
@@ -327,6 +331,7 @@ function resetForm() {
   document.getElementById('note').value = "";
   document.getElementById('country').value = "";
   document.getElementById('infoUrl').value = "";
+  document.getElementById('endDate').value = "";
   document.getElementById('photo').value = "";
   document.getElementById('photoPreviewList').innerHTML = "";
   document.getElementById('photoHint').textContent = "";

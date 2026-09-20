@@ -16,7 +16,7 @@ param(
 # ------------------------------------------------------------
 # CONFIG - hier anpassen
 # ------------------------------------------------------------
-$EndpointUrl = "https://script.google.com/macros/s/AKfycbzk4kmCXBdXP_Bt6d-oIZmeoM46gKHHkPnUCMax4B7KbxC-siZaTVD7Ttkfu9ZKyp4JiQ/exec";
+$EndpointUrl = "https://script.google.com/macros/s/AKfycbzavv1FmdLurTGD48Cg4fT50h8SCTx1u8jyoJ6xKOBv-X6LPq73cVTMS-f5vq7_DSqxjg/exec";
 $RepoPath    = "C:\Daten WORK\Reisen\Frieda_WorldTour\Media\InteractiveMap\TravelMap"   # lokaler Git-Klon des Karten-Repos
 $DataFile    = Join-Path $RepoPath "data.js"
 $LogPath     = "C:\Daten WORK\Reisen\Frieda_WorldTour\Media\InteractiveMap\"
