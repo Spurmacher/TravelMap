@@ -133,11 +133,11 @@
   }
 
   .caret{
-    width:10px;height:10px;flex:none;
+    width:24px;height:24px;flex:none;
     display:flex;align-items:center;justify-content:center;
     color:var(--text-mute);
     transition:transform .12s;
-    font-size:9px;
+    font-size:15px;
   }
   .caret.open{transform:rotate(90deg);}
   .cat-row{padding-left:10px;}
@@ -304,10 +304,36 @@
   ::-webkit-scrollbar-track{background:var(--bg-1);}
   ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
 
+  .sheet-handle{
+    display:none;
+    align-items:center; justify-content:center;
+    height:40px; cursor:pointer; position:relative;
+    border-bottom:1px solid var(--line);
+  }
+  .sheet-handle .grip{
+    width:36px; height:4px; border-radius:2px; background:var(--sand-dim);
+  }
+  .sheet-handle .sheet-label{
+    position:absolute; right:14px;
+    font-family:'JetBrains Mono',monospace; font-size:10px;
+    color:var(--text-mute); letter-spacing:0.06em; text-transform:uppercase;
+  }
+
   @media (max-width:720px){
-    .app{grid-template-columns:1fr;grid-template-rows:56px 42vh 1fr;}
-    .sidebar{grid-row:2;border-right:none;border-bottom:1px solid var(--line);}
-    .map-wrap{grid-row:3;}
+    .app{grid-template-columns:1fr;grid-template-rows:56px 1fr;}
+    .map-wrap{grid-row:2;}
+    .sidebar{
+      position:fixed; left:0; right:0; bottom:0; z-index:1000;
+      max-height:75vh;
+      border-right:none; border-top:1px solid var(--line);
+      border-radius:14px 14px 0 0;
+      box-shadow:0 -6px 24px rgba(0,0,0,0.45);
+      transform:translateY(calc(100% - 40px));
+      transition:transform .28s ease;
+      padding-top:0;
+    }
+    .sidebar.expanded{ transform:translateY(0); }
+    .sheet-handle{ display:flex; }
   }
 </style>
 </head>
@@ -322,6 +348,10 @@
   </div>
 
   <div class="sidebar" id="sidebar">
+    <div class="sheet-handle" id="sheetHandle">
+      <span class="grip"></span>
+      <span class="sheet-label" id="sheetLabel">Filter</span>
+    </div>
     <div class="side-section-label">Layer</div>
     <div id="layerList"></div>
 
@@ -855,6 +885,19 @@ fetch('tracks/manifest.json')
       });
     });
   });
+
+// ---------------------------------------------------------------
+// Mobile Bottom-Sheet: Filter-Panel per Griff auf-/zuklappen
+// ---------------------------------------------------------------
+const sheetHandle = document.getElementById('sheetHandle');
+const sheetLabel = document.getElementById('sheetLabel');
+const sidebarEl = document.getElementById('sidebar');
+if (sheetHandle) {
+  sheetHandle.addEventListener('click', () => {
+    const isOpen = sidebarEl.classList.toggle('expanded');
+    sheetLabel.textContent = isOpen ? 'Schliessen' : 'Filter';
+  });
+}
 </script>
 </body>
 </html>
