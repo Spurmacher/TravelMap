@@ -839,7 +839,7 @@ fetch('tracks/manifest.json')
       const label = entry.label || entry.file;
 
       const row = document.createElement('div');
-      row.className = 'layer-row on active';
+      row.className = 'layer-row';
       row.innerHTML = `
         <div class="checkbox"></div>
         <div class="swatch" style="background:${trackColor}"></div>
@@ -868,7 +868,8 @@ fetch('tracks/manifest.json')
         row.title = 'Datei nicht gefunden: ' + url;
       });
 
-      gpxLayer.addTo(map);
+      // Nicht automatisch addTo(map) - Track bleibt standardmaessig deaktiviert,
+      // wird erst beim Anklicken der Zeile per addLayer sichtbar.
 
       row.addEventListener('click', (ev) => {
         if (ev.target.classList.contains('elev-btn')) {
