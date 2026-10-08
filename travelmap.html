@@ -841,14 +841,14 @@ fetch('tracks/manifest.json')
       return;
     }
 
-    manifest.forEach(entry => {
+    manifest.forEach((entry, index) => {
       const url = 'tracks/' + entry.file;
       const trackColor = entry.color || DEFAULT_TRACK_COLOR;
       const borderColor = entry.borderColor || "#12150f";
       const label = entry.label || entry.file;
 
       const row = document.createElement('div');
-      row.className = 'layer-row';
+      row.className = (index === 0) ? 'layer-row on active' : 'layer-row';
       row.innerHTML = `
         <div class="checkbox"></div>
         <div class="swatch" style="background:${trackColor}"></div>
@@ -879,6 +879,7 @@ fetch('tracks/manifest.json')
 
       // Nicht automatisch addTo(map) - Track bleibt standardmaessig deaktiviert,
       // wird erst beim Anklicken der Zeile per addLayer sichtbar.
+      if (index === 0) { gpxLayer.addTo(map); }
 
       row.addEventListener('click', (ev) => {
         if (ev.target.classList.contains('elev-btn')) {
