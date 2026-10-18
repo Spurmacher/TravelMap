@@ -408,3 +408,19 @@ function jsonError(message) {
   return ContentService.createTextOutput(JSON.stringify({ ok: false, error: message }))
     .setMimeType(ContentService.MimeType.JSON);
 }
+
+function formatDateValue(v) {
+  if (v instanceof Date) {
+    return Utilities.formatDate(v, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), "yyyy-MM-dd");
+  }
+  return String(v || "");
+}
+
+function formatTimeValue(v) {
+  if (v instanceof Date) {
+    // Sheets speichert reine Zeitwerte intern als Date-Objekt (Basis 1899-12-30)
+    return Utilities.formatDate(v, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), "HH:mm");
+  }
+  return String(v || "");
+}
+
